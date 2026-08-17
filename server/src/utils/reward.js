@@ -1,4 +1,5 @@
 const { calcRealmLevel } = require('./realm');
+const { getExpGainRate } = require('./profession');
 
 // 经济与奖励规则
 const REWARDS = {
@@ -32,9 +33,10 @@ function getBestBonusRate(practicing = []) {
   }, 1);
 }
 
-// 给用户发放修为（含功法加成，向下取整），同时刷新境界等级；返回实际获得值
+// 给用户发放修为：功法最高倍率 × 职业灵气加成（法修+20%/魔修+10%），向下取整，
+// 同时刷新境界等级；返回实际获得值
 function grantExp(user, baseExp) {
-  const rate = getBestBonusRate(user.practicingTechniques);
+  const rate = getBestBonusRate(user.practicingTechniques) * getExpGainRate(user.profession);
   const gained = Math.floor(baseExp * rate);
   user.exp = (user.exp || 0) + gained;
   user.realmLevel = calcRealmLevel(user.exp);
