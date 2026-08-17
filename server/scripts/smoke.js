@@ -1,6 +1,8 @@
 // 全链路冒烟测试：需先启动服务（npm run dev / node src/server.js）
 // 运行：node scripts/smoke.js
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const BASE = process.env.SMOKE_BASE || 'http://localhost:3000/api';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@xiuxian.local';
 
 let passed = 0;
 let failed = 0;
@@ -42,11 +44,16 @@ async function call(method, path, { token, body } = {}) {
   const health = await call('GET', '/health');
   ok(health.success === true, 'GET /health');
 
-  // 2. 注册管理员（ADMIN_EMAIL 匹配）
-  const regA = await call('POST', '/auth/register', {
-    body: { username: adminName, email: 'admin@xiuxian.local', password: 'admin123' }
+  // 2. 注册管理员（ADMIN_EMAIL 匹配；幂等：已注册过则直接登录复用）
+  let regA = await call('POST', '/auth/register', {
+    body: { username: adminName, email: ADMIN_EMAIL, password: 'admin123' }
   });
-  ok(regA.success === true && regA.data.token, '注册管理员');
+  let reusedAdmin = false;
+  if (!regA.success && regA.status === 409) {
+    regA = await call('POST', '/auth/login', { body: { account: ADMIN_EMAIL, password: 'admin123' } });
+    reusedAdmin = true;
+  }
+  ok(regA.success === true && regA.data.token, reusedAdmin ? '管理员登录复用（幂等）' : '注册管理员');
   ok(regA.data && regA.data.user && regA.data.user.role === 'admin', 'ADMIN_EMAIL 注册自动成为 admin');
   const adminToken = regA.data && regA.data.token;
 
