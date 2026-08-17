@@ -23,6 +23,17 @@ const CATEGORIES = {
 
 const GRADE_CLS = { '黄阶': 'grade-huang', '玄阶': 'grade-xuan', '地阶': 'grade-di', '天阶': 'grade-tian', '仙阶': 'grade-xian' };
 
+// 职业徽章（与后端 utils/profession.js 对应）
+const PROFESSIONS = {
+  sword: { name: '剑修', cls: 'prof-sword' },
+  mage: { name: '法修', cls: 'prof-mage' },
+  ghost: { name: '鬼修', cls: 'prof-ghost' },
+  blood: { name: '血修', cls: 'prof-blood' },
+  monster: { name: '妖修', cls: 'prof-monster' },
+  demon: { name: '魔修', cls: 'prof-demon' },
+  body: { name: '体修', cls: 'prof-body' }
+};
+
 const AVATAR_COLORS = ['#7a6cc4', '#4e9e8a', '#c07a4a', '#b5533c', '#5a8ab4', '#a4783a', '#6a9c58', '#9c5890'];
 
 // ---------- 基础 DOM ----------
@@ -113,6 +124,12 @@ function realmBadge(realmLevel, realmName) {
 
 function gradeBadge(grade) {
   return el('span', 'badge ' + (GRADE_CLS[grade] || 'grade-huang'), grade);
+}
+
+function professionBadge(key) {
+  const p = PROFESSIONS[key];
+  if (!p) return null;
+  return el('span', 'badge ' + p.cls, p.name);
 }
 
 function categoryBadge(category) {
