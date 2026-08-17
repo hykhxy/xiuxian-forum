@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>功法投稿 · 灵墟论道</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+
+  <main class="container page">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:14px;max-width:820px;margin:0 auto" id="layout">
+      <div class="card">
+        <div class="page-head">
+          <div>
+            <div class="page-title">功法投稿</div>
+            <div class="page-sub">审核通过后上架图鉴，投稿人获 修为+15、灵石+20</div>
+          </div>
+        </div>
+
+        <form id="submit-form">
+          <div class="form-row">
+            <div class="form-item">
+              <label>功法名（2-20 字）</label>
+              <input type="text" id="name" maxlength="20" placeholder="例如：紫霄雷引诀">
+            </div>
+            <div class="form-item">
+              <label>品阶（决定数值）</label>
+              <select id="grade"></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-item">
+              <label>类型</label>
+              <select id="type"></select>
+            </div>
+            <div class="form-item">
+              <label>属性</label>
+              <select id="element"></select>
+            </div>
+            <div class="form-item">
+              <label>难度（1-5）</label>
+              <select id="difficulty"></select>
+            </div>
+          </div>
+          <div class="form-item">
+            <label>功法描述（来历、渊源，2000 字内）</label>
+            <textarea id="description" maxlength="2000" style="min-height:120px" placeholder="此法出自何门何派，有何渊源……"></textarea>
+          </div>
+          <div class="form-item">
+            <label>修炼效果说明（200 字内，展示文案）</label>
+            <input type="text" id="effect" maxlength="200" placeholder="例如：雷灵入体，百脉俱通">
+          </div>
+          <div class="form-item">
+            <label>封面图链接（选填）</label>
+            <input type="url" id="coverImage" placeholder="https://…">
+          </div>
+          <div class="form-hint" id="grade-preview" style="margin-bottom:12px"></div>
+          <button type="submit" class="btn btn-primary" id="submit-btn">提交审核</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="page-title" style="font-size:17px;margin-bottom:12px">我的投稿</div>
+        <div id="my-submissions"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/technique-submit.js"></script>
+</body>
+</html>
