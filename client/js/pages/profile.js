@@ -29,8 +29,14 @@
     const nameRow = el('div', 'profile-name');
     nameRow.appendChild(el('span', null, profileUser.username));
     nameRow.appendChild(realmBadge(profileUser.realmLevel, profileUser.realmName));
+    const profBadge = profileUser.profession ? professionBadge(profileUser.profession.key || profileUser.profession) : null;
+    if (profBadge) nameRow.appendChild(profBadge);
     if (profileUser.role === 'admin') nameRow.appendChild(el('span', 'badge realm-4', '执事'));
     info.appendChild(nameRow);
+
+    if (profileUser.profession && profileUser.profession.desc) {
+      info.appendChild(el('div', 'profile-bio', '【' + profileUser.profession.name + '】' + profileUser.profession.desc));
+    }
 
     const bio = el('div', 'profile-bio', profileUser.bio || '（此人道心深邃，未留一言）');
     info.appendChild(bio);
