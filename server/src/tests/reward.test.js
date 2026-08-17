@@ -35,6 +35,25 @@ test('grantExp：加成结果向下取整', () => {
   assert.strictEqual(grantExp(user, 3), Math.floor(3 * 1.05)); // 3.15 → 3
 });
 
+test('grantExp：法修灵气获取+20% 与功法倍率乘算', () => {
+  // 10 × 1.05(功法) × 1.2(法修) = 12.6 → 12
+  const user = { exp: 0, realmLevel: 1, profession: 'mage', practicingTechniques: [{ expBonusRate: 1.05 }] };
+  assert.strictEqual(grantExp(user, 10), 12);
+  // 纯法修无功法：10 × 1.2 = 12
+  const mageOnly = { exp: 0, realmLevel: 1, profession: 'mage', practicingTechniques: [] };
+  assert.strictEqual(grantExp(mageOnly, 10), 12);
+});
+
+test('grantExp：魔修全属性+10% 作用于灵气获取', () => {
+  const user = { exp: 0, realmLevel: 1, profession: 'demon', practicingTechniques: [] };
+  assert.strictEqual(grantExp(user, 10), 11);
+});
+
+test('grantExp：非法修职业无灵气加成', () => {
+  const user = { exp: 0, realmLevel: 1, profession: 'sword', practicingTechniques: [] };
+  assert.strictEqual(grantExp(user, 10), 10);
+});
+
 test('签到日期按东八区计算（Render 服务器为 UTC）', () => {
   // UTC 17日 17:00 = 东八区 18日 01:00
   assert.strictEqual(shanghaiDateKey(new Date('2026-08-17T17:00:00Z')), '2026-08-18');
