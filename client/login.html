@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>入道 · 灵墟论道</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+
+  <main class="container">
+    <div class="auth-wrap card">
+      <div class="auth-title">灵墟论道</div>
+      <div class="auth-sub">踏入修真界，与万千道友论道</div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login">登录</div>
+        <div class="auth-tab" id="tab-register">注册</div>
+      </div>
+
+      <!-- 登录 -->
+      <form id="form-login">
+        <div class="form-item">
+          <label>道号 / 邮箱</label>
+          <input type="text" id="login-account" placeholder="输入道号或邮箱" autocomplete="username">
+        </div>
+        <div class="form-item">
+          <label>密码</label>
+          <input type="password" id="login-password" placeholder="输入密码" autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="login-submit">踏入灵墟</button>
+      </form>
+
+      <!-- 注册 -->
+      <form id="form-register" style="display:none">
+        <div class="form-item">
+          <label>道号（2-16 字符）</label>
+          <input type="text" id="reg-username" placeholder="行走修真界的名号" autocomplete="off">
+        </div>
+        <div class="form-item">
+          <label>邮箱</label>
+          <input type="email" id="reg-email" placeholder="用于登录" autocomplete="email">
+        </div>
+        <div class="form-item">
+          <label>密码（至少 6 位）</label>
+          <input type="password" id="reg-password" placeholder="设置密码" autocomplete="new-password">
+        </div>
+        <div class="form-hint" style="margin-bottom:12px">新晋道友赠送 100 灵石，可在功法图鉴兑换功法修炼</div>
+        <button type="submit" class="btn btn-primary btn-block" id="register-submit">开辟道途</button>
+      </form>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/login.js"></script>
+</body>
+</html>
