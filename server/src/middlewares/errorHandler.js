@@ -8,7 +8,7 @@ function errorHandler(err, req, res, next) { // eslint-disable-line no-unused-va
   }
   if (err.code === 11000) {
     const field = Object.keys(err.keyPattern || {})[0] || '字段';
-    const label = field === 'username' ? '道号' : field === 'email' ? '邮箱' : field === 'name' ? '功法名' : field;
+    const label = field === 'username' ? '用户名' : field === 'name' ? '功法名' : field;
     return res.status(409).json({ success: false, message: `${label}已被占用` });
   }
   if (err.name === 'CastError') {
