@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>帖子详情 · 灵墟论道</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+
+  <main class="container page">
+    <div class="card" id="post-card"></div>
+
+    <div class="card comment-box">
+      <div class="page-title" style="font-size:18px;margin-bottom:12px">道友论道<span id="comment-count" style="font-size:13px;color:var(--muted);margin-left:8px"></span></div>
+      <div id="comment-editor"></div>
+      <div class="comments" id="comments"></div>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/post-detail.js"></script>
+</body>
+</html>
