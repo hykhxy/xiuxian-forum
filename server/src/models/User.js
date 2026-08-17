@@ -1,25 +1,23 @@
 const mongoose = require('mongoose');
 const { getRealmByLevel } = require('../utils/realm');
+const { PROFESSION_KEYS } = require('../utils/profession');
 
 const userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
-      required: [true, '道号不能为空'],
+      required: [true, '用户名不能为空'],
       unique: true,
       trim: true,
-      minlength: [2, '道号至少2个字符'],
-      maxlength: [16, '道号最多16个字符']
-    },
-    email: {
-      type: String,
-      required: [true, '邮箱不能为空'],
-      unique: true,
-      lowercase: true,
-      trim: true,
-      match: [/^\S+@\S+\.\S+$/, '邮箱格式不正确']
+      minlength: [2, '用户名至少2个字符'],
+      maxlength: [16, '用户名最多16个字符']
     },
     password: { type: String, required: true, select: false },
+    // 职业：注册时必选，此后无任何修改入口（终身制）
+    profession: {
+      type: String,
+      enum: { values: PROFESSION_KEYS, message: '职业不合法' }
+    },
     avatar: { type: String, default: '', maxlength: [500, '头像链接过长'] },
     bio: { type: String, default: '', maxlength: [200, '签名最多200字'] },
     exp: { type: Number, default: 0, min: 0 },
@@ -29,7 +27,7 @@ const userSchema = new mongoose.Schema(
     practicingTechniques: [
       {
         technique: { type: mongoose.Schema.Types.ObjectId, ref: 'Technique', required: true },
-        expBonusRate: { type: Number, default: 1 }, // 冗余倍率：功法数值由品阶固定生成，不会漂移
+        expBonusRate: { type: Number, default: 1 },
         startedAt: { type: Date, default: Date.now }
       }
     ],
