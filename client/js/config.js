@@ -1,5 +1,4 @@
 // ===== API 地址配置 =====
-// 本地开发：后端跑在 http://localhost:3000
-// 部署到 Render 后：改为后端服务的实际地址，例如
-// const API_BASE_URL = 'https://xiuxian-forum-api.onrender.com/api';
-const API_BASE_URL = 'http://localhost:3000/api';
+// 前后端同域部署（Koyeb 单服务）：直接用相对路径
+// 本地开发：启动后端后直接访问 http://localhost:3000 即可
+const API_BASE_URL = '/api';
