@@ -3,6 +3,7 @@ const User = require('../models/User');
 const Post = require('../models/Post');
 const CheckIn = require('../models/CheckIn');
 const { toPostSummary } = require('../utils/serialize');
+const { toProfessionInfo, getDerivedStats } = require('../utils/profession');
 const {
   REWARDS,
   grantExp,
@@ -11,7 +12,41 @@ const {
   calcConsecutiveDays
 } = require('../utils/reward');
 
-// GET /api/users/:id （可选登录：本人可见灵石/邮箱等私有字段）
+// GET /api/users/me/profile —— 自己的完整修行档案
+// 昵称 / 职业（含效果说明与面板属性）/ 境界 / 灵气（修为）/ 灵石 / 已拥有功法
+async function getMyProfile(req, res) {
+  const user = await User.findById(req.userId).populate('practicingTechniques.technique');
+  if (!user) return res.status(404).json({ success: false, message: '用户不存在' });
+
+  res.json({
+    success: true,
+    data: {
+      nickname: user.username,
+      avatar: user.avatar,
+      bio: user.bio,
+      role: user.role,
+      profession: toProfessionInfo(user.profession),           // 职业终身不可更改
+      derivedStats: getDerivedStats(user.profession),          // 攻击/气血/挂机/突破率/抽取率等面板
+      realm: { level: user.realmLevel, name: user.realmName, exp: user.exp },
+      spiritStones: user.spiritStones,
+      techniques: (user.practicingTechniques || [])
+        .filter((p) => p.technique)
+        .map((p) => ({
+          id: p.technique._id,
+          name: p.technique.name,
+          grade: p.technique.grade,
+          type: p.technique.type,
+          element: p.technique.element,
+          expBonusRate: p.expBonusRate,
+          startedAt: p.startedAt
+        })),
+      counts: { postCount: user.postCount, commentCount: user.commentCount },
+      createdAt: user.createdAt
+    }
+  });
+}
+
+// GET /api/users/:id （可选登录：本人可见灵石等私有字段）
 async function getPublicProfile(req, res) {
   const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ success: false, message: '用户不存在' });
@@ -26,6 +61,7 @@ async function getPublicProfile(req, res) {
         avatar: obj.avatar,
         bio: obj.bio,
         role: obj.role,
+        profession: toProfessionInfo(obj.profession),
         exp: obj.exp,
         realmLevel: obj.realmLevel,
         realmName: obj.realmName,
@@ -33,15 +69,14 @@ async function getPublicProfile(req, res) {
         commentCount: obj.commentCount,
         createdAt: obj.createdAt,
         practicingTechniques: isSelf ? obj.practicingTechniques : undefined,
-        spiritStones: isSelf ? obj.spiritStones : undefined,
-        email: isSelf ? obj.email : undefined
+        spiritStones: isSelf ? obj.spiritStones : undefined
       },
       isSelf
     }
   });
 }
 
-// PUT /api/users/me
+// PUT /api/users/me（职业不在可编辑字段之列 —— 保证终身不可更改）
 async function updateMe(req, res) {
   const user = req.user;
   const { bio, avatar } = req.body || {};
@@ -133,4 +168,12 @@ async function myFavorites(req, res) {
   });
 }
 
-module.exports = { getPublicProfile, updateMe, changePassword, checkin, checkinStatus, myFavorites };
+module.exports = {
+  getMyProfile,
+  getPublicProfile,
+  updateMe,
+  changePassword,
+  checkin,
+  checkinStatus,
+  myFavorites
+};
