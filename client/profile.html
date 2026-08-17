@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>道友主页 · 灵墟论道</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+
+  <main class="container page">
+    <div class="card" id="profile-head"></div>
+
+    <div class="card" id="checkin-card" style="display:none">
+      <div class="checkin-box">
+        <div>
+          <div class="page-title" style="font-size:17px">每日签到</div>
+          <div class="page-sub" id="checkin-tip">签到得修为+5、灵石+2，连签 7 天有额外奖励</div>
+        </div>
+        <button class="btn btn-jade" id="checkin-btn">签到</button>
+        <div class="page-sub" id="streak-tip" style="margin-left:auto"></div>
+      </div>
+      <div class="calendar" id="calendar"></div>
+    </div>
+
+    <div class="tabs" id="tabs"></div>
+    <div id="tab-content"></div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/profile.js"></script>
+</body>
+</html>
