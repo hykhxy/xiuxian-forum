@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -43,8 +44,14 @@ app.use('/api/comments', commentRoutes);
 app.use('/api/techniques', techniqueRoutes);
 app.use('/api/admin', adminRoutes);
 
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: '接口不存在' });
+// 前端静态托管（单服务部署：Express 同时提供 API 与页面）
+// 本地开发直接访问 http://localhost:3000
+app.use(express.static(path.join(__dirname, '..', '..', 'client')));
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ success: false, message: '接口不存在' });
+  }
+  res.sendFile(path.join(__dirname, '..', '..', 'client', 'index.html'));
 });
 
 app.use(errorHandler);
