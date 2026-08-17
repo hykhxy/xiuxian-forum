@@ -93,6 +93,15 @@ input, select, textarea { font-family: inherit; }
 .cat-technique{ color: var(--accent); background: var(--accent-soft); border-color: rgba(201, 164, 78, 0.3); }
 .cat-announce { color: var(--danger); background: var(--danger-soft); border-color: rgba(192, 91, 71, 0.35); }
 
+/* 职业徽章 */
+.prof-sword  { color: #c8d4e0; background: rgba(200, 212, 224, 0.12); border-color: rgba(200, 212, 224, 0.35); }
+.prof-mage   { color: #6fb8e8; background: rgba(111, 184, 232, 0.12); border-color: rgba(111, 184, 232, 0.35); }
+.prof-ghost  { color: #9d9db8; background: rgba(157, 157, 184, 0.14); border-color: rgba(157, 157, 184, 0.35); }
+.prof-blood  { color: #d47a6a; background: rgba(212, 122, 106, 0.12); border-color: rgba(212, 122, 106, 0.35); }
+.prof-monster{ color: #b8a44e; background: rgba(184, 164, 78, 0.12); border-color: rgba(184, 164, 78, 0.35); }
+.prof-demon  { color: #b06ad4; background: rgba(176, 106, 212, 0.12); border-color: rgba(176, 106, 212, 0.4); }
+.prof-body   { color: #d4a06a; background: rgba(212, 160, 106, 0.12); border-color: rgba(212, 160, 106, 0.35); }
+
 .tag { display: inline-block; padding: 0 8px; font-size: 12px; color: var(--muted); background: var(--panel-2); border-radius: 4px; line-height: 22px; }
 
 /* ---------- 布局与卡片 ---------- */
