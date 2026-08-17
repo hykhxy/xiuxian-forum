@@ -1,0 +1,33 @@
+# Render Blueprint：后端 Web Service + 前端 Static Site
+# 使用前提：MongoDB Atlas 免费集群已建好（Render 不提供 MongoDB）
+# 部署时 Render 会提示填写 sync:false 的环境变量
+services:
+  # 后端 API（免费实例，15 分钟无访问自动休眠，唤醒约 50 秒）
+  - type: web
+    name: xiuxian-forum-api
+    rootDir: server
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI # 填 Atlas 连接串，如 mongodb+srv://user:pass@cluster.xxx.mongodb.net/xiuxian-forum?retryWrites=true&w=majority
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL # 用此邮箱注册的用户自动成为管理员
+        sync: false
+
+  # 前端静态站（永久免费在线）
+  - type: static
+    name: xiuxian-forum-web
+    rootDir: client
+    buildCommand: node update-api-url.js https://xiuxian-forum-api.onrender.com/api
+    staticPublishPath: ./
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
