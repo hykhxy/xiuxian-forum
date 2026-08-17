@@ -119,22 +119,21 @@ async function create(req, res) {
   });
 }
 
-// PUT /api/posts/:id 编辑（仅作者；公告帖仅管理员）
+// PUT /api/posts/:id 编辑（仅作者本人；内容完整性考虑，管理员亦不可改写他人帖子）
 async function update(req, res) {
   const post = await Post.findById(req.params.id);
   if (!post || post.status === 'deleted') {
     return res.status(404).json({ success: false, message: '帖子不存在或已删除' });
   }
-  const isAdmin = req.user.role === 'admin';
-  if (String(post.author) !== req.userId && !isAdmin) {
+  if (String(post.author) !== req.userId) {
     return res.status(403).json({ success: false, message: '只能编辑自己的帖子' });
   }
   const { title, content, category, tags } = req.body || {};
   if (category !== undefined && !CATEGORY_LABELS[category]) {
     return res.status(400).json({ success: false, message: '板块不合法' });
   }
-  if ((category === 'announce' || post.category === 'announce') && !isAdmin) {
-    return res.status(403).json({ success: false, message: '公告帖仅管理员可编辑' });
+  if (post.category === 'announce' && category !== undefined && category !== 'announce' && req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: '公告帖不可改为普通板块' });
   }
   if (title !== undefined) post.title = title;
   if (content !== undefined) post.content = content;
