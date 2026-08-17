@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>功法图鉴 · 灵墟论道</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+
+  <main class="container page">
+    <div class="page-head">
+      <div>
+        <div class="page-title">功法图鉴</div>
+        <div class="page-sub">兑换功法并修炼，获取修为加成</div>
+      </div>
+      <a class="btn btn-jade" href="technique-submit.html">投稿功法</a>
+    </div>
+
+    <div class="filter-bar">
+      <select id="grade" style="max-width:110px"><option value="">全部品阶</option></select>
+      <select id="type" style="max-width:110px"><option value="">全部类型</option></select>
+      <select id="element" style="max-width:110px"><option value="">全部属性</option></select>
+      <input type="text" id="keyword" placeholder="搜索功法…" style="max-width:180px">
+      <select id="sort" style="max-width:110px">
+        <option value="new">最新上架</option>
+        <option value="hot">修炼人数</option>
+      </select>
+    </div>
+
+    <div class="tech-grid" id="tech-list"></div>
+    <div class="pagination" id="pagination"></div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/techniques.js"></script>
+</body>
+</html>
