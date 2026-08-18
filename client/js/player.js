@@ -372,6 +372,8 @@
      初始化（幂等）
      ------------------------------------------------------------ */
   function init() {
+    // 听曲页等自带播放器的页面置 window.DX_PLAYER_OFF=true 跳过全局播放栏（视频背景仍注入）
+    if (window.DX_PLAYER_OFF) return;
     restore();
     buildPlayer();
     dom.vol.value = state.volume;
