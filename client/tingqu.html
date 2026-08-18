@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>听曲 · 灵墟论道</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+
+  <main class="container page">
+    <!-- 中央搜索区（视频背景 body::before 遮罩之上） -->
+    <section class="tq-hero">
+      <div class="dx-title">听 曲</div>
+      <div class="dx-sub">一曲仙音 · 涤荡尘心</div>
+
+      <div class="tq-search-wrap">
+        <input type="text" id="tq-input" class="tq-input" placeholder="输入歌名或歌手，如「稻香」「周杰伦」…">
+        <button class="btn btn-primary" id="tq-search-btn">寻 曲</button>
+      </div>
+
+      <!-- 搜索结果下拉列表：歌名 + 歌手，点击即播 -->
+      <div class="tq-results" id="tq-results"></div>
+    </section>
+  </main>
+
+  <!-- 页面专属底部播放器（全局播放栏已通过 DX_PLAYER_OFF 关闭） -->
+  <div id="tq-player">
+    <div class="dxp-main">
+      <img class="dxp-cover" id="tq-cover" alt="封面">
+      <div class="dxp-info">
+        <div class="dxp-name" id="tq-name">虚位以待</div>
+        <div class="dxp-artist" id="tq-artist">搜索一首曲子吧</div>
+      </div>
+      <button class="dxp-btn" id="tq-prev" title="上一首">⏮</button>
+      <button class="dxp-btn dxp-play" id="tq-toggle" title="播放/暂停">▶</button>
+      <button class="dxp-btn" id="tq-next" title="下一首">⏭</button>
+      <span class="dxp-time" id="tq-cur">0:00</span>
+      <input class="dxp-progress" id="tq-progress" type="range" min="0" max="100" value="0" step="0.1">
+      <span class="dxp-time" id="tq-dur">0:00</span>
+      <span class="dxp-volglyph">♪</span>
+      <input class="dxp-vol" id="tq-vol" type="range" min="0" max="1" value="0.7" step="0.01">
+      <button class="dxp-btn" id="tq-lrc-btn" title="歌词">词</button>
+    </div>
+    <div class="tq-lyric" id="tq-lyric"><div class="dxp-lrc-inner" id="tq-lrc-inner"></div></div>
+  </div>
+
+  <!-- 关闭全局播放栏（本页自带播放器），再加载公共脚本 -->
+  <script>window.DX_PLAYER_OFF = true;</script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/pages/tingqu.js"></script>
+</body>
+</html>
