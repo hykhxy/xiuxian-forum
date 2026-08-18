@@ -47,12 +47,7 @@
       .then(function (d) { return (d.success && d.data.lyric) || ''; }).catch(function () { return ''; });
   }
 
-  /* ---------------- 换上听曲专属视频背景 ---------------- */
-  (function swapVideo() {
-    var v = document.querySelector('.ink-scene .ink-video');
-    if (v) v.src = 'assets/video/tingqu_bg.mp4';
-  })();
-
+  /* ---------------- 全站统一视频背景（./assets/video/forum_bg.mp4，由 player.js 公共组件注入） ---------------- */
   renderNav('tingqu');
   sprinkleFireflies();
 
