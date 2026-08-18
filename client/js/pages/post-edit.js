@@ -63,7 +63,7 @@
     submitBtn.textContent = editId ? '保存' : '发布';
     if (!r.ok) return toast(r.message, 'error');
 
-    if (!editId && r.data.expGained > 0) toast('发布成功，修为 +' + r.data.expGained, 'exp');
+    if (!editId && r.data.qiGained > 0) toast('发布成功，灵气 +' + r.data.qiGained, 'exp');
     else toast('已保存', 'success');
     location.href = 'post-detail.html?id=' + (editId || r.data.post.id);
   });
