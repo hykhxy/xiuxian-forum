@@ -89,7 +89,8 @@ function renderNav(active) {
     { key: 'index', href: 'index.html', label: '山门' },
     { key: 'posts', href: 'posts.html', label: '论道台' },
     { key: 'techniques', href: 'techniques.html', label: '藏经阁' },
-    { key: 'post-edit', href: 'post-edit.html', label: '执笔' }
+    { key: 'post-edit', href: 'post-edit.html', label: '执笔' },
+    { key: 'dengxian', href: 'dengxian.html', label: '登仙' }
   ];
   links.forEach((l) => {
     const a = el('a', 'nav-link' + (active === l.key ? ' active' : ''), l.label);
