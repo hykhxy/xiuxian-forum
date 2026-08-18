@@ -32,6 +32,14 @@ const userSchema = new mongoose.Schema(
         startedAt: { type: Date, default: Date.now }
       }
     ],
+    // 功法背包：抽卡/兑换获得，equip 后进 practicingTechniques 生效
+    ownedTechniques: [
+      {
+        technique: { type: mongoose.Schema.Types.ObjectId, ref: 'Technique', required: true },
+        obtainedAt: { type: Date, default: Date.now },
+        source: { type: String, enum: ['draw', 'practice'], default: 'draw' }
+      }
+    ],
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
     postCount: { type: Number, default: 0, min: 0 },
     commentCount: { type: Number, default: 0, min: 0 },
