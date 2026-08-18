@@ -2,7 +2,7 @@ const Post = require('../models/Post');
 const { CATEGORY_LABELS } = require('../models/Post');
 const User = require('../models/User');
 const { toPostSummary, toAuthorSummary } = require('../utils/serialize');
-const { REWARDS, grantExp } = require('../utils/reward');
+const { REWARDS, grantQi } = require('../utils/reward');
 
 function escapeRegex(str) {
   return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -90,7 +90,7 @@ async function detail(req, res) {
   });
 }
 
-// POST /api/posts 发帖（修为+10 含功法加成）
+// POST /api/posts 发帖（灵气+10 含职业/功法加成）
 async function create(req, res) {
   const { title, content, category, tags } = req.body || {};
   if (!CATEGORY_LABELS[category]) {
@@ -108,14 +108,14 @@ async function create(req, res) {
     author: req.userId
   });
 
-  const expGained = grantExp(req.user, REWARDS.postExp);
+  const qiGained = grantQi(req.user, REWARDS.postQi);
   req.user.postCount += 1;
   await req.user.save();
 
   await post.populate('author', 'username avatar realmLevel');
   res.status(201).json({
     success: true,
-    data: { post: { id: post._id, title: post.title, category: post.category, createdAt: post.createdAt }, expGained }
+    data: { post: { id: post._id, title: post.title, category: post.category, createdAt: post.createdAt }, qiGained }
   });
 }
 
