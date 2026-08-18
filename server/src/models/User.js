@@ -20,9 +20,10 @@ const userSchema = new mongoose.Schema(
     },
     avatar: { type: String, default: '', maxlength: [500, '头像链接过长'] },
     bio: { type: String, default: '', maxlength: [200, '签名最多200字'] },
-    exp: { type: Number, default: 0, min: 0 },
-    realmLevel: { type: Number, default: 1, min: 1 },
+    qi: { type: Number, default: 0, min: 0 },        // 灵气（挂机与活跃产出，突破消耗）
+    realm: { type: Number, default: 1, min: 1, max: 8 }, // 境界等级 1-8（突破制）
     spiritStones: { type: Number, default: 100, min: 0 },
+    idleStartedAt: { type: Date, default: null },    // 挂机开始时间；null=未挂机
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     practicingTechniques: [
       {
@@ -40,7 +41,7 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.virtual('realmName').get(function () {
-  return getRealmByLevel(this.realmLevel).name;
+  return getRealmByLevel(this.realm).name;
 });
 
 userSchema.methods.toJSON = function () {
