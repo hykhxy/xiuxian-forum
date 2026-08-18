@@ -11,6 +11,7 @@ const postRoutes = require('./routes/postRoutes');
 const commentRoutes = require('./routes/commentRoutes');
 const techniqueRoutes = require('./routes/techniqueRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const cultivationRoutes = require('./routes/cultivationRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
@@ -42,6 +43,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/techniques', techniqueRoutes);
+app.use('/api/cultivation', cultivationRoutes);
 app.use('/api/admin', adminRoutes);
 
 // 前端静态托管（单服务部署：Express 同时提供 API 与页面）
