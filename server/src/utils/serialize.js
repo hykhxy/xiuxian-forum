@@ -7,8 +7,8 @@ function toAuthorSummary(author) {
     id: author._id,
     username: author.username,
     avatar: author.avatar,
-    realmLevel: author.realmLevel,
-    realmName: getRealmByLevel(author.realmLevel).name
+    realm: author.realm,
+    realmName: getRealmByLevel(author.realm).name
   };
 }
 
