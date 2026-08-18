@@ -12,7 +12,7 @@ const techniqueSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: { values: ['心法', '剑法', '刀法', '身法', '丹道', '器道', '阵法', '杂学'], message: '功法类型不合法' },
+      enum: { values: ['心法', '剑法', '刀法', '身法', '丹道', '器道', '阵法', '符道', '杂学'], message: '功法类型不合法' },
       required: [true, '请选择功法类型']
     },
     grade: {
@@ -41,6 +41,16 @@ const techniqueSchema = new mongoose.Schema(
     difficulty: { type: Number, min: 1, max: 5, default: 3 },
     requiredRealmLevel: { type: Number, default: 1, min: 1 },
     price: { type: Number, min: 1, required: [true, '价格缺失'] },
+    // 第16轮：层数系统（品阶决定，seed/投稿时生成）
+    maxLevel: { type: Number, default: 3, min: 1, max: 9 },            // 黄3/玄4/地5/天8/仙9
+    growthRate: { type: Number, default: 0.05, min: 0, max: 1 },       // 每层成长系数
+    baseStats: {                                                          // 第1层基础加成
+      atk: { type: Number, default: 0 },
+      def: { type: Number, default: 0 },
+      hp: { type: Number, default: 0 },
+      qi: { type: Number, default: 0 },
+      cultivation: { type: Number, default: 0 }   // 升层消耗基准（灵气）
+    },
     coverImage: { type: String, default: '', maxlength: [500, '封面链接过长'] },
     submitter: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
