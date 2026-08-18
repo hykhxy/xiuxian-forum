@@ -123,7 +123,7 @@ async function practice(req, res) {
   if (user.practicingTechniques.some((p) => String(p.technique) === String(technique._id))) {
     return res.status(400).json({ success: false, message: '你已在修炼此功法' });
   }
-  if (user.realmLevel < technique.requiredRealmLevel) {
+  if (user.realm < technique.requiredRealmLevel) {
     return res.status(403).json({
       success: false,
       message: `境界不足，需达到「${getRealmByLevel(technique.requiredRealmLevel).name}」`
