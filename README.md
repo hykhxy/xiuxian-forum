@@ -29,6 +29,13 @@
 | GET /api/cultivation/status | 修行面板（访问即自动结算挂机收益，不打断挂机） |
 | POST /api/cultivation/breakthrough | 一键突破：灵气≥消耗 → 成功 realm+1 / 失败损失 50%（魔修全损） |
 
+## 抽卡系统（第4轮）
+
+- **POST /api/techniques/draw**：消耗 100 灵石随机抽功法。概率 天阶1% / 地阶5% / 玄阶20% / 黄阶74%（妖修天阶+5%自黄阶扣；仙阶不进卡池）；空池自动降级（天→地→玄→黄）；**重复功法自动分解**返还灵石（黄20/玄50/地120/天300，期望值≈33.8/次，长期净亏防刷）
+- **GET /api/techniques/backpack**：功法背包（含 equipped 状态与来源 draw/practice）
+- **POST /api/techniques/:id/equip**：装备背包功法（境界门槛校验；多功法取最高倍率生效）
+- `practice` 兑换修炼同时入背包（source=practice）
+
 ## 技术栈
 
 - 前端：原生 HTML/CSS/JS（零依赖、零构建），水墨修仙风深色主题，移动端自适应
@@ -77,8 +84,8 @@ npm run dev        # http://localhost:3000 即完整站点（前后端同源）
 
 ```bash
 cd server
-npm test                       # 单元测试 48 项（境界表/职业/灵气规则/挂机结算/突破判定/东八区日期）
-node scripts/smoke.js          # 全链路冒烟 85 项（注册职业→挂机结算→突破→功法→审核→权限）
+npm test                       # 单元测试 56 项（境界表/职业/灵气规则/挂机结算/突破判定/抽卡概率+收敛验证）
+node scripts/smoke.js          # 全链路冒烟 97 项（注册→挂机→突破→抽卡→背包→装备→功法→审核→权限）
 node scripts/migrate-realm.js prod  # 运维：旧18级→新8境界数据迁移（exp→qi）
 node scripts/hello-check.js 0  # 运维：直连 Atlas 分片 0 查主从状态
 node scripts/drop-email-index.js dev  # 运维：清理旧版 email 唯一索引
