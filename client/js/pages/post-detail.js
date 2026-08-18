@@ -40,7 +40,8 @@
     meta.appendChild(el('span', null, fmtDateTime(post.createdAt)));
     meta.appendChild(el('span', null, '👁 ' + post.viewCount));
 
-    const content = el('div', 'post-content', post.content);
+    const content = el('div', 'post-content');
+    renderRichText(content, post.content);   // 支持音乐链接 → 歌曲播放卡片
 
     if (post.tags && post.tags.length) {
       const tags = el('div');
@@ -172,7 +173,9 @@
     if (c.isDeleted) {
       body.appendChild(el('div', 'comment-content deleted-tip', '（此言已随风散去）'));
     } else {
-      body.appendChild(el('div', 'comment-content', c.content));
+      const cc = el('div', 'comment-content');
+      renderRichText(cc, c.content);
+      body.appendChild(cc);
     }
 
     const actions = el('div', 'comment-actions');
