@@ -46,15 +46,19 @@ function qs(name) {
 }
 
 // ---------- 水墨动态背景（元素一次性注入，动画全部由 CSS @keyframes 驱动） ----------
+// 层序（.ink-scene, fixed, z-index:-2 内部）：
+//   video(player.js 插入,最底) → fallback(降级图,默认隐藏) → dim(黑遮罩) → cloud×3 / water / mist / fireflies
+// 视频之上另有 body::before 宣纸白渐变(z-index:-1) 组成双层遮罩保证文字可读
 function initInkScene() {
   if (document.querySelector('.ink-scene')) return;
   const scene = el('div', 'ink-scene');
   scene.setAttribute('aria-hidden', 'true');
-  scene.appendChild(el('div', 'ink-mountain'));
-  scene.appendChild(el('div', 'ink-water'));
+  scene.appendChild(el('div', 'ink-fallback'));        // 视频失败降级图（.no-video 时显示）
+  scene.appendChild(el('div', 'ink-dim'));             // 黑色轻遮罩压视频
   scene.appendChild(el('div', 'ink-cloud ink-cloud-1'));
   scene.appendChild(el('div', 'ink-cloud ink-cloud-2'));
   scene.appendChild(el('div', 'ink-cloud ink-cloud-3'));
+  scene.appendChild(el('div', 'ink-water'));
   scene.appendChild(el('div', 'ink-mist'));
   const flies = el('div', 'ink-fireflies');
   for (let i = 0; i < 8; i++) flies.appendChild(el('i'));
