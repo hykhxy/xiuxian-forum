@@ -1,7 +1,15 @@
 const Technique = require('../models/Technique');
+const User = require('../models/User');
 const { toAuthorSummary } = require('../utils/serialize');
 const { GRADE_CONFIG } = require('../utils/reward');
 const { getRealmByLevel } = require('../utils/realm');
+const {
+  DRAW_COST,
+  DECOMPOSE_STONES,
+  pickGrade,
+  pickOne,
+  fallbackGrades
+} = require('../utils/draw');
 
 function escapeRegex(str) {
   return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -113,7 +121,133 @@ async function submit(req, res) {
   res.status(201).json({ success: true, data: { technique: { id: technique._id, name: technique.name, status: technique.status } } });
 }
 
-// POST /api/techniques/:id/practice 兑换并修炼功法
+// POST /api/techniques/draw 抽卡：消耗 100 灵石随机抽取功法
+// 概率：天1% / 地5% / 玄20% / 黄74%（妖修天阶+5%）；重复自动分解为灵石
+async function draw(req, res) {
+  const user = req.user;
+  if (user.spiritStones < DRAW_COST) {
+    return res.status(400).json({ success: false, message: `灵石不足，抽取需 ${DRAW_COST} 灵石（当前 ${user.spiritStones}）` });
+  }
+
+  const grade = pickGrade(Math.random(), user.profession);
+  // 目标品阶空池时按 天→地→玄→黄 降级
+  let candidates = [];
+  let finalGrade = grade;
+  for (const g of fallbackGrades(grade)) {
+    const pool = await Technique.find({ status: 'approved', grade: g }).select('_id name grade type element effect expBonusRate price requiredRealmLevel').lean();
+    if (pool.length) { candidates = pool; finalGrade = g; break; }
+  }
+  if (!candidates.length) {
+    return res.status(503).json({ success: false, message: '卡池暂无可用功法，请稍后再试' });
+  }
+
+  const tech = pickOne(candidates);
+  const techId = String(tech._id);
+  const alreadyOwned = user.ownedTechniques.some((o) => String(o.technique) === techId);
+
+  user.spiritStones -= DRAW_COST;
+  let decomposed = false;
+  let refund = 0;
+  if (alreadyOwned) {
+    // 重复功法自动分解，按品阶返还灵石
+    decomposed = true;
+    refund = DECOMPOSE_STONES[tech.grade] || 20;
+    user.spiritStones += refund;
+  } else {
+    user.ownedTechniques.push({ technique: tech._id, obtainedAt: new Date(), source: 'draw' });
+  }
+  await user.save();
+
+  res.json({
+    success: true,
+    data: {
+      grade: finalGrade,                                     // 实际命中的品阶（可能降级）
+      duplicated: decomposed,
+      refund,
+      technique: {
+        id: tech._id,
+        name: tech.name,
+        grade: tech.grade,
+        type: tech.type,
+        element: tech.element,
+        effect: tech.effect,
+        expBonusRate: tech.expBonusRate,
+        requiredRealmLevel: tech.requiredRealmLevel
+      },
+      spiritStones: user.spiritStones,
+      newlyOwned: !decomposed
+    }
+  });
+}
+
+// GET /api/techniques/backpack 功法背包（含装备状态）
+async function backpack(req, res) {
+  const user = await User.findById(req.userId).populate('ownedTechniques.technique');
+  if (!user) return res.status(404).json({ success: false, message: '用户不存在' });
+  const equippedIds = new Set(user.practicingTechniques.map((p) => String(p.technique)));
+  res.json({
+    success: true,
+    data: {
+      list: (user.ownedTechniques || [])
+        .filter((o) => o.technique)
+        .map((o) => ({
+          id: o.technique._id,
+          name: o.technique.name,
+          grade: o.technique.grade,
+          type: o.technique.type,
+          element: o.technique.element,
+          effect: o.technique.effect,
+          expBonusRate: o.technique.expBonusRate,
+          requiredRealmLevel: o.technique.requiredRealmLevel,
+          obtainedAt: o.obtainedAt,
+          source: o.source,
+          equipped: equippedIds.has(String(o.technique._id))
+        })),
+      total: user.ownedTechniques.length,
+      spiritStones: user.spiritStones,
+      drawCost: DRAW_COST
+    }
+  });
+}
+
+// POST /api/techniques/:id/equip 装备背包中的功法（最高倍率生效，可装备多个）
+async function equip(req, res) {
+  const technique = await Technique.findById(req.params.id);
+  if (!technique || technique.status !== 'approved') {
+    return res.status(404).json({ success: false, message: '功法不存在或未上架' });
+  }
+  const user = req.user;
+  const inBackpack = user.ownedTechniques.some((o) => String(o.technique) === String(technique._id));
+  if (!inBackpack) {
+    return res.status(400).json({ success: false, message: '尚未拥有此功法，请先抽取或兑换' });
+  }
+  if (user.practicingTechniques.some((p) => String(p.technique) === String(technique._id))) {
+    return res.status(400).json({ success: false, message: '此功法已在修炼中' });
+  }
+  if (user.realm < technique.requiredRealmLevel) {
+    return res.status(403).json({
+      success: false,
+      message: `境界不足，需达到「${getRealmByLevel(technique.requiredRealmLevel).name}」`
+    });
+  }
+
+  user.practicingTechniques.push({
+    technique: technique._id,
+    expBonusRate: technique.expBonusRate,
+    startedAt: new Date()
+  });
+  await user.save();
+  await Technique.updateOne({ _id: technique._id }, { $inc: { practitionerCount: 1 } });
+  res.json({
+    success: true,
+    data: {
+      user: user.toJSON(),
+      technique: { id: technique._id, name: technique.name, grade: technique.grade }
+    }
+  });
+}
+
+// POST /api/techniques/:id/practice 兑换并修炼功法（灵石直购：入背包并立即装备）
 async function practice(req, res) {
   const technique = await Technique.findById(req.params.id);
   if (!technique || technique.status !== 'approved') {
@@ -134,6 +268,10 @@ async function practice(req, res) {
   }
 
   user.spiritStones -= technique.price;
+  // 未拥有才入背包（拥有但未装备的走 equip）
+  if (!user.ownedTechniques.some((o) => String(o.technique) === String(technique._id))) {
+    user.ownedTechniques.push({ technique: technique._id, obtainedAt: new Date(), source: 'practice' });
+  }
   user.practicingTechniques.push({
     technique: technique._id,
     expBonusRate: technique.expBonusRate,
@@ -144,4 +282,4 @@ async function practice(req, res) {
   res.json({ success: true, data: { user: user.toJSON(), technique: { id: technique._id, name: technique.name } } });
 }
 
-module.exports = { list, detail, submit, practice };
+module.exports = { list, detail, submit, practice, draw, backpack, equip };
