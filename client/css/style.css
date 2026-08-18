@@ -802,3 +802,137 @@ body { padding-bottom: 64px; }
 
 /* 帖子内嵌歌曲播放卡片 */
 .dx-song-card { margin: 4px 0; display: inline-flex; }
+
+/* ============================================================
+   十五、入道令（第14轮）：守夜人毛玻璃 + 符纹暗纹 + 流光 + 职业光效
+   ============================================================ */
+.glass-stage {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  gap: 64px; padding: 40px 20px; flex-wrap: wrap;
+}
+.glass-brand { display: flex; gap: 20px; align-items: flex-start; }
+.glass-brand .sect {
+  writing-mode: vertical-rl;
+  font-family: var(--font-brush);
+  font-size: 62px; letter-spacing: 24px; font-weight: 700;
+  color: #f3e9dc;
+  text-shadow: 0 0 22px rgba(216, 176, 74, 0.35), 0 2px 10px rgba(0, 0, 0, 0.7);
+  border-left: 1px solid rgba(216, 176, 74, 0.4);
+  padding-left: 22px;
+}
+.glass-brand .sect-slogan {
+  writing-mode: vertical-rl;
+  font-family: var(--font-brush);
+  font-size: 15px; letter-spacing: 8px; color: rgba(243, 233, 220, 0.72);
+  border-right: 1px solid rgba(243, 233, 220, 0.2); padding-right: 18px; padding-top: 8px;
+}
+
+/* 毛玻璃卡 */
+.glass-card {
+  position: relative; overflow: hidden;
+  width: 460px; max-width: 96vw;
+  background: rgba(16, 8, 8, 0.55);                    /* 深色半透 + backdrop 毛玻璃 */
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid rgba(216, 176, 74, 0.28);          /* 细金边 */
+  border-radius: 12px;
+  box-shadow: 0 0 32px rgba(216, 176, 74, 0.10), 0 18px 44px rgba(0, 0, 0, 0.55);
+  padding: 34px 32px 30px;
+}
+.glass-card .token-head {
+  text-align: center; margin-bottom: 18px;
+  font-family: var(--font-brush); font-size: 21px; letter-spacing: 8px;
+  color: #e8cf9a;
+  text-shadow: 0 0 14px rgba(216, 176, 74, 0.45);
+}
+.glass-card .token-head::after {
+  content: ""; display: block; width: 66%; height: 1px; margin: 10px auto 0;
+  background: linear-gradient(90deg, transparent, rgba(216, 176, 74, 0.6), transparent);
+}
+/* 卡内表单控件深色化 */
+.glass-card input {
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(243, 233, 220, 0.22);
+  color: #f3e9dc;
+}
+.glass-card input::placeholder { color: rgba(243, 233, 220, 0.38); }
+.glass-card input:focus { border-color: rgba(216, 176, 74, 0.8); background: rgba(0, 0, 0, 0.5); box-shadow: 0 0 0 3px rgba(216, 176, 74, 0.18); }
+.glass-card .form-item label { color: rgba(243, 233, 220, 0.65); }
+.glass-card .form-hint { color: rgba(243, 233, 220, 0.45); }
+.glass-card .auth-tabs { border-bottom-color: rgba(243, 233, 220, 0.22); }
+.glass-card .auth-tab { color: rgba(243, 233, 220, 0.55); }
+.glass-card .auth-tab.active { color: #e8cf9a; border-bottom-color: #d8b04a; }
+
+/* 符文暗纹：极淡的斜纹 + 四角印纹 */
+.rune-texture::before {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(45deg, rgba(216, 176, 74, 0.035) 0 2px, transparent 2px 26px),
+    repeating-linear-gradient(-45deg, rgba(216, 176, 74, 0.025) 0 2px, transparent 2px 34px),
+    radial-gradient(circle at 8% 10%, rgba(216, 176, 74, 0.08), transparent 34%),
+    radial-gradient(circle at 92% 90%, rgba(139, 0, 0, 0.12), transparent 38%);
+}
+
+/* 流光：斜光带每 7s 扫过一次（transform/opacity，GPU 合成） */
+.sheen::after {
+  content: "";
+  position: absolute; top: -60%; bottom: -60%; left: -30%;
+  width: 26%;
+  background: linear-gradient(105deg, transparent, rgba(243, 233, 220, 0.07) 40%, rgba(216, 176, 74, 0.12) 50%, rgba(243, 233, 220, 0.07) 60%, transparent);
+  transform: skewX(-18deg);
+  animation: sheenSweep 7s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes sheenSweep {
+  0%, 55%  { transform: skewX(-18deg) translateX(0); opacity: 0; }
+  60%      { opacity: 1; }
+  100%     { transform: skewX(-18deg) translateX(560%); opacity: 0; }
+}
+
+/* 验证码行 + 开发模式回显 */
+.code-row { display: flex; gap: 8px; }
+.code-row input { flex: 1; }
+.code-row .btn { white-space: nowrap; letter-spacing: 1px; }
+.dev-code-hint { margin-top: 6px; }
+.dev-code-hint.show { color: #e8cf9a; text-shadow: 0 0 8px rgba(216, 176, 74, 0.4); }
+
+/* 职业选择：七 tiles，各配 --glow 光色 */
+.prof-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.prof-tile {
+  --glow: rgba(216, 176, 74, 0.8);                     /* 兜底金 */
+  position: relative; cursor: pointer; text-align: center;
+  padding: 10px 6px 8px; border-radius: 8px;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(243, 233, 220, 0.14);
+  transition: transform .18s ease, box-shadow .22s ease, border-color .22s ease;
+}
+.prof-tile:hover, .prof-tile.selected {
+  transform: translateY(-3px);
+  border-color: var(--glow);
+  box-shadow: 0 0 16px var(--glow), inset 0 0 12px rgba(0, 0, 0, 0.3);
+}
+.prof-glyph {
+  font-family: var(--font-brush); font-size: 24px; color: var(--glow);
+  text-shadow: 0 0 12px var(--glow);
+  transition: text-shadow .22s;
+}
+.prof-tile:hover .prof-glyph, .prof-tile.selected .prof-glyph { text-shadow: 0 0 20px var(--glow), 0 0 34px var(--glow); }
+.prof-name { font-family: var(--font-brush); font-size: 13px; color: #f3e9dc; margin-top: 3px; letter-spacing: 2px; }
+.prof-desc { font-size: 10px; color: rgba(243, 233, 220, 0.5); margin-top: 2px; line-height: 1.4; }
+
+/* 七职业光色（剑=暗金剑芒 / 法=蓝辉 / 鬼=幽青 / 血=赤 / 妖=琥珀 / 魔=紫电 / 体=铜光） */
+.pg-sword   { --glow: #d8b04a; }
+.pg-mage    { --glow: #6fa8f0; }
+.pg-ghost   { --glow: #7fe0c8; }
+.pg-blood   { --glow: #e05545; }
+.pg-monster { --glow: #e09a3e; }
+.pg-demon   { --glow: #a86ae0; }
+.pg-body    { --glow: #d97f4e; }
+
+@media (max-width: 720px) {
+  .glass-stage { gap: 26px; padding: 24px 12px; }
+  .glass-brand .sect { font-size: 40px; letter-spacing: 14px; }
+  .glass-card { width: 100%; padding: 26px 20px 24px; }
+  .prof-grid { grid-template-columns: repeat(3, 1fr); }
+}
