@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>论道台 · 灵墟论道</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+
+  <main class="container page">
+    <div class="page-head">
+      <div class="page-title">论道台</div>
+      <div class="page-sub">万千道友，坐而论道</div>
+    </div>
+
+    <!-- 古书目录式三栏：左目录 / 中列表 / 右雅集 -->
+    <div class="hall-layout">
+      <aside class="card catalog-panel">
+        <div class="catalog-title">卷 · 目录</div>
+        <div class="catalog-list" id="catalog-list"></div>
+      </aside>
+
+      <section>
+        <div class="filter-bar">
+          <input type="text" id="keyword" placeholder="搜索帖子…" style="max-width:220px">
+          <select id="sort" style="max-width:110px">
+            <option value="new">最新</option>
+            <option value="hot">最热</option>
+          </select>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;color:var(--ink-soft);cursor:pointer">
+            <input type="checkbox" id="essence" style="width:auto"> 仅看精华
+          </label>
+        </div>
+        <div id="post-list" class="post-list"></div>
+        <div class="pagination" id="pagination"></div>
+      </section>
+
+      <aside class="card side-panel side-rank">
+        <div class="side-title">雅集 · 热帖</div>
+        <div id="rank-list"></div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/pages/posts.js"></script>
+</body>
+</html>
