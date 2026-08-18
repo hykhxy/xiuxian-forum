@@ -49,11 +49,11 @@ h1, h2, h3, .page-title, .brand-font { font-family: var(--font-brush); }
 /* ============================================================
    一、动态背景（图4 云雾山景）：固定铺满 + 纯 CSS 动效
    元素结构由 ui.js 注入（见 initInkScene）：
-   .ink-scene > .ink-mountain / .ink-water / .ink-cloud×3 / .ink-mist / .ink-fireflies
+   .ink-scene > .ink-fallback / .ink-water / .ink-cloud×3 / .ink-mist / .ink-dim / .ink-fireflies
    ============================================================ */
 .ink-scene { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
 
-/* 全屏视频背景：置于场景最底层；成功时覆盖静态山景，失败移除即降级 */
+/* 全屏视频背景（全站唯一背景）：置于场景最底层 */
 .ink-video {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
@@ -61,16 +61,16 @@ h1, h2, h3, .page-title, .brand-font { font-family: var(--font-brush); }
   will-change: transform;                 /* GPU 合成层，不随滚动、不卡交互 */
 }
 
-/* 山景底图：视频失败时的降级层；缓慢"呼吸"传达林间风动 */
-.ink-mountain {
+/* 降级静态图：视频加载失败/超时（.ink-scene.no-video）时显示，平时不渲染 */
+.ink-fallback {
+  display: none;
   position: absolute; inset: -3%;
-  background: url("../assets/bg-mountain.jpg") center / cover no-repeat;
-  animation: sceneBreath 46s ease-in-out infinite;
+  background: url("../assets/img/fallback.jpg") center / cover no-repeat;
 }
-@keyframes sceneBreath {
-  0%, 100% { transform: scale(1) rotate(0deg); }
-  50%      { transform: scale(1.018) rotate(0.12deg); }
-}
+.ink-scene.no-video .ink-fallback { display: block; }
+
+/* 黑色轻遮罩：压暗视频色彩（浅色主题下配合宣纸白层保证文字可读，浓度可调） */
+.ink-dim { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.38); }
 
 /* 云海：三层半透明白，不同 duration 水平平移 → 视差 */
 .ink-cloud {
@@ -140,16 +140,16 @@ h1, h2, h3, .page-title, .brand-font { font-family: var(--font-brush); }
   100% { transform: translate(-14px, -60px); opacity: 0; }
 }
 
-/* 全局宣纸过渡层：保证正文可读 */
+/* 宣纸白渐变层（z-index:-1）：与 .ink-dim 黑遮罩组成双层遮罩——黑层压视频、白层保浅色文字可读 */
 body::before {
   content: "";
   position: fixed; inset: 0; z-index: -1;
-  background: linear-gradient(180deg, rgba(253, 251, 247, 0.42), rgba(253, 251, 247, 0.66) 40%, rgba(253, 251, 247, 0.78));
+  background: linear-gradient(180deg, rgba(253, 251, 247, 0.34), rgba(253, 251, 247, 0.55) 40%, rgba(253, 251, 247, 0.68));
   pointer-events: none;
 }
 
 /* ============================================================
-   二、面板（图5 水墨人物背景）：宣纸质感 + 白遮罩 + 面板萤火
+   二、面板：宣纸质感 + 白遮罩 + 面板萤火
    ============================================================ */
 .card {
   position: relative;
@@ -160,20 +160,7 @@ body::before {
   box-shadow: var(--shadow-ink);
   overflow: hidden;
 }
-/* 图5 人物水墨：右上淡入 */
-.card::before {
-  content: "";
-  position: absolute; inset: 0;
-  background: url("../assets/bg-figure.jpg") top right / auto 118% no-repeat;
-  opacity: 0.16;
-  pointer-events: none;
-  animation: figureMist 40s ease-in-out infinite;     /* 背景雾气缓慢流动意象 */
-}
-@keyframes figureMist {
-  0%, 100% { opacity: 0.13; }
-  50%      { opacity: 0.2; }
-}
-/* 规格要求：白遮罩保证文字可读 */
+/* 第9轮：全站统一视频背景，面板不再叠加人物背景图；白遮罩保留以保证文字可读 */
 .card::after {
   content: "";
   position: absolute; inset: 0;
@@ -693,7 +680,7 @@ select option { background: var(--paper); color: var(--ink); }
 .dx-step.current .dx-step-rate { color: var(--ink-soft); }
 
 /* GPU 合成提示：背景层与进度条均只动 transform/opacity，显式提升合成层防交互卡顿 */
-.ink-scene, .ink-cloud, .ink-mountain, .ink-water, .ink-mist, .progress-inner, .card .ff {
+.ink-scene, .ink-video, .ink-cloud, .ink-water, .ink-mist, .progress-inner, .card .ff {
   will-change: transform, opacity;
 }
 
@@ -701,8 +688,8 @@ select option { background: var(--paper); color: var(--ink); }
    十一、动画偏好降级与移动端
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
-  .ink-mountain, .ink-cloud, .ink-water, .ink-mist,
-  .ink-fireflies i, .card .ff, .card::before, .palace-card::after { animation: none !important; transition: none !important; }
+  .ink-cloud, .ink-water, .ink-mist,
+  .ink-fireflies i, .card .ff, .palace-card::after { animation: none !important; transition: none !important; }
 }
 
 @media (max-width: 980px) {
