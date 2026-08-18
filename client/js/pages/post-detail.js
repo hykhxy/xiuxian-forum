@@ -82,7 +82,7 @@
       delBtn.onclick = async () => {
         if (!confirm('确认焚毁此帖？此举不可逆。')) return;
         const r = await api.del('/posts/' + postId);
-        if (r.ok) { toast('帖子已焚毁', 'success'); location.href = 'index.html'; }
+        if (r.ok) { toast('帖子已焚毁', 'success'); location.href = 'posts.html'; }
         else toast(r.message, 'error');
       };
       actions.appendChild(delBtn);
