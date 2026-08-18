@@ -849,41 +849,51 @@ select option { background: var(--paper); color: var(--ink); }
 .tq-item:hover .tq-item-play { opacity: 1; transform: translateX(0); }
 .tq-loading { justify-content: center; color: var(--ink-faint); font-family: var(--font-brush); letter-spacing: 3px; }
 
-/* 页面专属播放器（复用 .dxp-* 控件样式，容器独立） */
+/* 页面专属播放器（第10轮：深色黑底白字，适配红黑水墨背景） */
 #tq-player {
   position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%);
   z-index: 150; width: min(960px, calc(100vw - 20px));
-  background: rgba(253, 251, 247, 0.92);
-  border: 1px solid var(--line-strong); border-radius: 8px;
-  box-shadow: 0 6px 24px rgba(43, 43, 43, 0.16);
+  background: rgba(0, 0, 0, 0.6);                    /* 半透明黑 */
+  border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(8px);
+  color: #fff;
   will-change: transform;
+  overflow: hidden;
 }
+.tq-mode-tip {
+  padding: 5px 14px 0; font-size: 11.5px; letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.62); font-family: var(--font-brush);
+}
+#tq-meting-box, #tq-iframe-box { padding: 6px 10px 10px; }
 
-/* 官方外链播放器区（直链兜底） */
-.tq-embed {
-  max-width: 620px; margin: 20px auto 0; padding: 16px;
-  background: rgba(253, 251, 247, 0.92);
-  border: 1px solid var(--line-strong); border-radius: 8px;
-  box-shadow: var(--shadow-ink);
+/* APlayer 深色覆盖（融入黑底白字容器） */
+#tq-player .aplayer {
+  background: transparent; color: #fff;
+  box-shadow: none; font-family: var(--font-body);
+  border-radius: 6px;
 }
-.tq-embed-tip { font-size: 12.5px; color: var(--ink-faint); margin-bottom: 10px; font-family: var(--font-brush); letter-spacing: 1px; }
-.tq-embed-box { display: flex; justify-content: center; overflow: hidden; border-radius: 6px; }
-.tq-embed-box iframe { max-width: 100%; }
-.tq-lyric {
-  display: none; position: absolute; bottom: calc(100% + 8px); right: 0;
-  width: 300px; height: 320px;
-  background: linear-gradient(180deg, rgba(253,251,247,0.97), rgba(253,251,247,0.92));
-  border: 1px solid var(--line-strong); border-radius: 8px;
-  box-shadow: var(--shadow-ink-hover); overflow: hidden; padding: 16px 0;
-}
-.tq-lyric.show { display: block; animation: lrcIn .3s ease; }
+#tq-player .aplayer .aplayer-info { border-color: rgba(255, 255, 255, 0.22); }
+#tq-player .aplayer .aplayer-info .aplayer-music .aplayer-title,
+#tq-player .aplayer .aplayer-info .aplayer-music .aplayer-author { color: #fff; }
+#tq-player .aplayer .aplayer-lrc:before { background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); }
+#tq-player .aplayer .aplayer-lrc:after { background: linear-gradient(0deg, rgba(0,0,0,0.9), transparent); }
+#tq-player .aplayer .aplayer-lrc p { color: rgba(255, 255, 255, 0.55); text-shadow: 0 0 4px rgba(0,0,0,.8); }
+#tq-player .aplayer .aplayer-lrc p.aplayer-lrc-current { color: #fff; }
+#tq-player .aplayer .aplayer-pic { border-radius: 6px 0 0 6px; }
+#tq-player .aplayer .aplayer-list ol li { border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.75); background: rgba(0,0,0,0.55); }
+#tq-player .aplayer .aplayer-list ol li.aplayer-list-light { background: rgba(179, 84, 62, 0.25); }
+#tq-player .aplayer .aplayer-list ol li .aplayer-list-title,
+#tq-player .aplayer .aplayer-list ol li .aplayer-list-author { color: rgba(255,255,255,0.85); }
+#tq-player .aplayer .aplayer-list ol li .aplayer-list-index { color: rgba(255,255,255,0.5); }
+
+/* 官方外链 iframe 区（方案B） */
+#tq-iframe-box iframe { display: block; border-radius: 6px; background: #fff; }
 
 @media (max-width: 720px) {
   .tq-search-wrap { flex-direction: column; }
   .tq-results { max-width: none; }
   #tq-player { width: calc(100vw - 16px); bottom: 8px; }
-  .tq-lyric { width: min(300px, calc(100vw - 24px)); height: 260px; }
 }
 /* 播放器不遮核心内容：为 body 留出底部空间 */
 body { padding-bottom: 64px; }
