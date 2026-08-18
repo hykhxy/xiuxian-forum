@@ -7,15 +7,14 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <!-- 全屏留白：竖排书法宗门名 + 卷轴令牌 -->
-  <div class="auth-scene">
-    <div class="auth-title">
+  <!-- 守夜人风舞台：竖排书法 + 毛玻璃卡（符纹暗纹 + 流光） -->
+  <div class="glass-stage">
+    <div class="glass-brand">
       <div class="sect">灵墟论道</div>
       <div class="sect-slogan">云深不知处 · 一步一登仙</div>
     </div>
 
-    <div class="scroll-token card">
-      <i class="ff"></i><i class="ff"></i>
+    <div class="glass-card rune-texture sheen">
       <div class="token-head">入 道 令</div>
 
       <div class="auth-tabs">
@@ -39,6 +38,18 @@
       <!-- 注册 -->
       <form id="form-register" style="display:none">
         <div class="form-item">
+          <label>注册邮箱</label>
+          <div class="code-row">
+            <input type="email" id="reg-email" placeholder="用于接收验证码" autocomplete="email">
+            <button type="button" class="btn btn-jade btn-sm" id="send-code-btn">获取验证码</button>
+          </div>
+          <div class="form-hint dev-code-hint" id="dev-code-hint"></div>
+        </div>
+        <div class="form-item">
+          <label>验证码</label>
+          <input type="text" id="reg-code" maxlength="6" placeholder="6 位数字验证码" autocomplete="one-time-code">
+        </div>
+        <div class="form-item">
           <label>道号（2-16 字符）</label>
           <input type="text" id="reg-username" placeholder="行走修真界的名号" autocomplete="off">
         </div>
@@ -47,19 +58,16 @@
           <input type="password" id="reg-password" placeholder="设置密码" autocomplete="new-password">
         </div>
         <div class="form-item">
-          <label>选择职业（终身不可更改）</label>
-          <select id="reg-profession">
-            <option value="">— 请选择职业 —</option>
-          </select>
-          <div class="form-hint" id="profession-hint">职业决定修行方向，请慎重抉择</div>
+          <label>选择道统（职业 · 终身不可更改）</label>
+          <div class="prof-grid" id="prof-grid"></div>
+          <div class="form-hint" id="profession-hint">择一道统而行，光起处即天命所归</div>
         </div>
         <button type="submit" class="btn btn-primary btn-block" id="register-submit">开 辟 道 途</button>
       </form>
-
-      <div class="auth-hint">新晋道友赠 100 灵石 · 可往藏经阁抽取功法</div>
     </div>
   </div>
 
+  <script>window.DX_PLAYER_OFF = true;</script>
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/ui.js"></script>
