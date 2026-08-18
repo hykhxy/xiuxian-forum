@@ -64,7 +64,7 @@
     if (p.author) {
       chip.appendChild(avatarHtml(p.author));
       chip.appendChild(el('span', null, p.author.username));
-      chip.appendChild(realmBadge(p.author.realmLevel, p.author.realmName));
+      chip.appendChild(realmBadge(p.author.realm, p.author.realmName));
       meta.appendChild(chip);
     }
     meta.appendChild(el('span', null, timeAgo(p.createdAt)));
