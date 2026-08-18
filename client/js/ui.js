@@ -86,6 +86,11 @@ function renderNav(active) {
     a.href = l.href;
     menu.appendChild(a);
   });
+  // 「真我」RPG 人物卡（模态框，全站可用）
+  const zhenwo = el('a', 'nav-link nav-btn-zhenwo', '真我');
+  zhenwo.href = 'javascript:void(0)';
+  zhenwo.onclick = () => openTrueSelf();
+  menu.appendChild(zhenwo);
 
   const right = el('div', 'nav-right');
   const user = Auth.user();
@@ -245,4 +250,103 @@ function renderRichText(container, text) {
     rest = rest.slice(m.index + m[1].length);
   }
   if (rest) container.appendChild(document.createTextNode(rest));
+}
+
+// ---------- 「真我」RPG 人物卡（第18轮）：左打坐剪影 + 右两列属性，深色磨砂玻璃 ----------
+function openTrueSelf() {
+  document.querySelector('.zw-mask')?.remove();
+  const mask = el('div', 'zw-mask');
+  const card = el('div', 'zw-card rune-texture sheen');
+
+  // 头部
+  const head = el('div', 'zw-head');
+  head.appendChild(el('div', 'zw-title', '真 我'));
+  const close = el('span', 'zw-close', '✕');
+  close.onclick = () => mask.remove();
+  head.appendChild(close);
+  card.appendChild(head);
+
+  const body = el('div', 'zw-body');
+
+  // 左：打坐人物剪影（纯 CSS）
+  const figure = el('div', 'zw-figure-wrap');
+  const halo = el('div', 'zw-halo');
+  const figureEl = el('div', 'zw-figure', '🧘');
+  figureEl.title = '吐纳打坐中';
+  halo.appendChild(figureEl);
+  const ripple1 = el('div', 'zw-ripple');
+  const ripple2 = el('div', 'zw-ripple zw-ripple-2');
+  figure.appendChild(halo);
+  figure.appendChild(ripple1);
+  figure.appendChild(ripple2);
+  figure.appendChild(el('div', 'zw-figure-caption', '凝神吐纳'));
+  body.appendChild(figure);
+
+  // 右：两列属性
+  const statsBox = el('div', 'zw-stats');
+  statsBox.appendChild(el('div', 'zw-loading', '推演命格中……'));
+  body.appendChild(statsBox);
+  card.appendChild(body);
+  mask.appendChild(card);
+  mask.onclick = (e) => { if (e.target === mask) mask.remove(); };
+  document.body.appendChild(mask);
+
+  // 未登录
+  if (!Auth.isLoggedIn()) {
+    statsBox.innerHTML = '';
+    const tip = el('div', 'zw-login-tip');
+    const a = el('a', null, '登 录');
+    a.href = 'login.html?from=' + encodeURIComponent(location.href);
+    tip.appendChild(document.createTextNode('尚未入道，'));
+    tip.appendChild(a);
+    tip.appendChild(document.createTextNode('方可观真我。'));
+    statsBox.appendChild(tip);
+    return;
+  }
+
+  // 数据：真实 stats + me；暴击率为展示值（后端暂无此字段）
+  Promise.all([api.get('/users/me/stats'), api.get('/auth/me')]).then(([st, me]) => {
+    statsBox.innerHTML = '';
+    if (!st.ok || !me.ok) {
+      statsBox.appendChild(el('div', 'zw-login-tip', '推演失败，请稍后再试'));
+      return;
+    }
+    const u = me.data.user;
+    const critRate = 5 + (u.profession === 'sword' ? 10 : u.profession === 'monster' ? 5 : 3); // Mock 展示值
+
+    const colL = el('div', 'zw-col');
+    const colR = el('div', 'zw-col');
+    colL.appendChild(el('div', 'zw-name', u.username));
+    colL.appendChild(zwKv('境 界', st.data.realm.name));
+    colL.appendChild(zwKv('职 业', PROFESSIONS[u.profession] ? PROFESSIONS[u.profession].name : (u.profession || '散修')));
+    colL.appendChild(zwKv('灵气值', String(st.data.total.qi)));
+    colL.appendChild(zwKv('生命值', String(st.data.total.hp)));
+    colR.appendChild(el('div', 'zw-sub', '· 战斗 ·'));
+    colR.appendChild(zwKv('攻击力', String(st.data.total.atk)));
+    colR.appendChild(zwKv('防御值', String(st.data.total.def)));
+    colR.appendChild(zwKv('暴击率', critRate + '%'));
+    colR.appendChild(zwKv('灵 石', '◇ ' + (u.spiritStones ?? 0)));
+
+    statsBox.appendChild(colL);
+    statsBox.appendChild(colR);
+
+    // 已修炼功法徽标（最多3）
+    const techs = (st.data.techniques || []).slice(0, 3);
+    if (techs.length) {
+      const techRow = el('div', 'zw-tech-row');
+      techs.forEach((t) => {
+        const b = gradeBadge(t.grade);
+        b.appendChild(document.createTextNode(' ' + t.name));
+        techRow.appendChild(b);
+      });
+      statsBox.appendChild(techRow);
+    }
+  });
+
+  function zwKv(label, value) {
+    const row = el('div', 'zw-kv');
+    row.appendChild(el('span', 'zw-kv-label', label));
+    row.appendChild(el('span', 'zw-kv-value', value));
+    return row;
+  }
 }
