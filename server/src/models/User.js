@@ -39,7 +39,16 @@ const userSchema = new mongoose.Schema(
       {
         technique: { type: mongoose.Schema.Types.ObjectId, ref: 'Technique', required: true },
         expBonusRate: { type: Number, default: 1 },
-        startedAt: { type: Date, default: Date.now }
+        startedAt: { type: Date, default: Date.now },
+        // 第16轮：层数系统
+        currentLevel: { type: Number, default: 1, min: 1 },   // 当前修炼层
+        currentStats: {                                        // 当前层实际加成（升级时重算写入）
+          atk: { type: Number, default: 0 },
+          def: { type: Number, default: 0 },
+          hp: { type: Number, default: 0 },
+          qi: { type: Number, default: 0 },
+          cultivation: { type: Number, default: 0 }
+        }
       }
     ],
     // 功法背包：抽卡/兑换获得，equip 后进 practicingTechniques 生效
