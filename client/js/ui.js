@@ -1,16 +1,13 @@
 // 公共 UI 组件：导航、徽章、toast、时间格式化、分页、头像（全部用 textContent 渲染，防 XSS）
 
-const REALM_NAMES = [
-  '练气一层', '练气二层', '练气三层', '练气四层', '练气五层', '练气六层', '练气七层', '练气八层', '练气九层',
-  '筑基期', '金丹期', '元婴期', '化神期', '炼虚期', '合体期', '大乘期', '渡劫期', '仙人'
-];
-// 境界大阶段 → 徽章配色档位（0-4）
+const REALM_NAMES = ['练气', '筑基', '金丹', '元婴', '化神', '合体', '大乘', '渡劫'];
+// 境界 → 徽章配色档位（0-4）
 const REALM_TIERS = [
-  { max: 9, cls: 'realm-0' },   // 练气
-  { max: 12, cls: 'realm-1' },  // 筑基/金丹/元婴
-  { max: 14, cls: 'realm-2' },  // 化神/炼虚
-  { max: 17, cls: 'realm-3' },  // 合体/大乘/渡劫
-  { max: 18, cls: 'realm-4' }   // 仙人
+  { max: 1, cls: 'realm-0' },   // 练气
+  { max: 2, cls: 'realm-1' },   // 筑基
+  { max: 3, cls: 'realm-2' },   // 金丹
+  { max: 4, cls: 'realm-3' },   // 元婴
+  { max: 8, cls: 'realm-4' }    // 化神~渡劫
 ];
 
 const CATEGORIES = {
@@ -116,9 +113,10 @@ function avatarHtml(user, cls) {
 }
 
 // ---------- 徽章 ----------
-function realmBadge(realmLevel, realmName) {
-  const name = realmName || REALM_NAMES[Math.min(Math.max((realmLevel || 1) - 1, 0), 17)];
-  const tier = REALM_TIERS.find((t) => (realmLevel || 1) <= t.max) || REALM_TIERS[4];
+function realmBadge(realm, realmName) {
+  const lv = Math.min(Math.max(realm || 1, 1), 8);
+  const name = realmName || REALM_NAMES[lv - 1];
+  const tier = REALM_TIERS.find((t) => lv <= t.max) || REALM_TIERS[4];
   return el('span', 'badge ' + tier.cls, name);
 }
 
