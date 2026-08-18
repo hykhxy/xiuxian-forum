@@ -639,6 +639,57 @@ select option { background: var(--paper); color: var(--ink); }
 .draw-result { max-width: 380px; }
 
 /* ============================================================
+   十·五、登仙 · 闭关修行页（第7轮）
+   背景复用全局 .ink-scene（fixed, z-index:-2）与 body::before 遮罩；
+   面板自身为半透明白 + 墨线，即文字可读层。动画均 transform/opacity（GPU 合成）。
+   ============================================================ */
+.dengxian-hero { text-align: center; padding: 46px 0 26px; }
+.dx-title {
+  font-family: var(--font-brush);
+  font-size: 44px; letter-spacing: 14px; text-indent: 14px;
+  color: var(--ink); font-weight: 700;
+}
+.dx-slogan {
+  margin-top: 12px; font-family: var(--font-brush);
+  font-size: 15px; letter-spacing: 5px; color: var(--ink-soft);
+}
+
+.dx-panel { max-width: 760px; margin: 0 auto; }
+.dx-panel + .dx-panel { margin-top: 16px; }
+.dx-panel-title { font-family: var(--font-brush); font-size: 20px; letter-spacing: 4px; color: var(--ink); }
+
+/* 灵气大数（挂机时数字实时跳动） */
+.dx-qi-box { text-align: center; min-width: 96px; }
+.dx-qi-num {
+  font-family: var(--font-brush);
+  font-size: 34px; line-height: 1.2; font-weight: 700;
+  color: var(--jade-ink);
+  font-variant-numeric: tabular-nums;      /* 数字跳动不抖宽 */
+}
+
+.dx-bt-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+
+/* 仙途八境长阶 */
+.dx-realm-steps { display: flex; gap: 6px; flex-wrap: wrap; }
+.dx-step {
+  position: relative; flex: 1; min-width: 76px;
+  padding: 10px 6px 8px; text-align: center;
+  border: 1px dashed var(--line); border-radius: 4px;
+  background: rgba(255, 255, 255, 0.4);
+}
+.dx-step-name { display: block; font-family: var(--font-brush); font-size: 16px; letter-spacing: 3px; color: var(--ink-faint); }
+.dx-step-rate { display: block; font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
+.dx-step.passed .dx-step-name, .dx-step.passed .dx-step-rate { color: var(--jade-ink); }
+.dx-step.current { border: 1px solid var(--cinnabar); background: var(--cinnabar-soft); }
+.dx-step.current .dx-step-name { color: var(--cinnabar); font-weight: 700; }
+.dx-step.current .dx-step-rate { color: var(--ink-soft); }
+
+/* GPU 合成提示：背景层与进度条均只动 transform/opacity，显式提升合成层防交互卡顿 */
+.ink-scene, .ink-cloud, .ink-mountain, .ink-water, .ink-mist, .progress-inner, .card .ff {
+  will-change: transform, opacity;
+}
+
+/* ============================================================
    十一、动画偏好降级与移动端
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
