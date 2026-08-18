@@ -52,13 +52,13 @@
     } else if (r.data.practicedByMe) {
       actionWrap.appendChild(el('button', 'btn btn-jade', '✓ 已在修炼'));
     } else {
-      const needRealm = REALM_NAMES[t.requiredRealmLevel - 1] || '练气一层';
-      const realmOk = (me.realmLevel || 1) >= t.requiredRealmLevel;
+      const needRealm = REALM_NAMES[t.requiredRealmLevel - 1] || '练气';
+      const realmOk = (me.realm || 1) >= t.requiredRealmLevel;
       const stonesOk = (me.spiritStones || 0) >= t.price;
       const btn = el('button', 'btn btn-primary', '兑换修炼（◇ ' + t.price + '）');
       if (!realmOk) {
         btn.disabled = true;
-        actionWrap.appendChild(el('div', 'form-hint', '需境界：' + needRealm + '（当前 ' + (REALM_NAMES[(me.realmLevel || 1) - 1]) + '）'));
+        actionWrap.appendChild(el('div', 'form-hint', '需境界：' + needRealm + '（当前 ' + (REALM_NAMES[(me.realm || 1) - 1]) + '）'));
       } else if (!stonesOk) {
         btn.disabled = true;
         actionWrap.appendChild(el('div', 'form-hint', '灵石不足（持有 ' + (me.spiritStones || 0) + '，需 ' + t.price + '）'));
@@ -95,7 +95,7 @@
     kv.appendChild(kvItem('品阶', t.grade));
     kv.appendChild(kvItem('类型 / 属性', t.type + ' · ' + t.element));
     kv.appendChild(kvItem('修炼难度', '★'.repeat(t.difficulty) + '☆'.repeat(5 - t.difficulty)));
-    kv.appendChild(kvItem('境界要求', REALM_NAMES[t.requiredRealmLevel - 1] || '练气一层'));
+    kv.appendChild(kvItem('境界要求', REALM_NAMES[t.requiredRealmLevel - 1] || '练气'));
     kv.appendChild(kvItem('兑换灵石', '◇ ' + t.price));
     kv.appendChild(kvItem('修炼人数', t.practitionerCount + ' 人'));
 
