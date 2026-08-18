@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { REWARDS } = require('../utils/reward');
 const { PROFESSIONS, getProfession } = require('../utils/profession');
+const { settleIdle } = require('../utils/cultivation');
 
 const USERNAME_RE = /^[\u4e00-\u9fa5A-Za-z0-9_]+$/;
 
@@ -63,9 +64,11 @@ async function login(req, res) {
   res.json({ success: true, data: { token: signToken(user), user: user.toJSON() } });
 }
 
-// GET /api/auth/me
+// GET /api/auth/me（访问即结算挂机灵气 —— 「下次访问时」语义）
 async function me(req, res) {
-  res.json({ success: true, data: { user: req.user.toJSON() } });
+  const settled = settleIdle(req.user);
+  if (settled.gained > 0) await req.user.save();
+  res.json({ success: true, data: { user: req.user.toJSON(), justSettledQi: settled.gained } });
 }
 
 module.exports = { register, login, me };
