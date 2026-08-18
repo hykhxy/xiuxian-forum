@@ -1,19 +1,64 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const VerifyCode = require('../models/VerifyCode');
 const { REWARDS } = require('../utils/reward');
 const { PROFESSIONS, getProfession } = require('../utils/profession');
 const { settleIdle } = require('../utils/cultivation');
 
 const USERNAME_RE = /^[\u4e00-\u9fa5A-Za-z0-9_]+$/;
+const EMAIL_RE = /^\S+@\S+\.\S+$/;
+const CODE_RE = /^\d{6}$/;
 
 function signToken(user) {
   return jwt.sign({ id: String(user._id) }, process.env.JWT_SECRET, { expiresIn: '7d' });
 }
 
-// POST /api/auth/register —— 用户名 + 密码 + 职业（职业终身不可更改）
+// POST /api/auth/send-code —— 注册邮箱验证码
+// 开发模式（未配置 SMTP_HOST）：验证码直接回显 devCode 并打印日志；接 SMTP 后改为真实发信
+async function sendCode(req, res) {
+  const email = String((req.body || {}).email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(email)) {
+    return res.status(400).json({ success: false, message: '邮箱格式不正确' });
+  }
+  if (await User.exists({ email })) {
+    return res.status(409).json({ success: false, message: '该邮箱已注册，请直接登录' });
+  }
+  // 频控：同邮箱 60 秒内仅可获取一次
+  const recent = await VerifyCode.findOne({ email, purpose: 'register' }).sort({ createdAt: -1 });
+  if (recent && Date.now() - new Date(recent.createdAt).getTime() < 60 * 1000) {
+    return res.status(429).json({ success: false, message: '验证码已发送，请 60 秒后再试' });
+  }
+
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  await VerifyCode.create({
+    email,
+    code,
+    purpose: 'register',
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    ip: req.ip || ''
+  });
+
+  const devMode = !process.env.SMTP_HOST;
+  if (!devMode) {
+    // TODO: 接入 nodemailer 真实发信（用户提供 SMTP 授权码后启用，届时删除 devCode 回显）
+  }
+  console.log(`[verify-code] ${email} → ${code}${devMode ? '（开发模式回显）' : ''}`);
+
+  res.json({
+    success: true,
+    data: {
+      sent: true,
+      devMode,
+      devCode: devMode ? code : undefined,
+      expiresInMinutes: 10
+    }
+  });
+}
+
+// POST /api/auth/register —— 邮箱验证码 + 用户名 + 密码 + 职业（职业终身不可更改）
 async function register(req, res) {
-  const { username, password, profession } = req.body || {};
+  const { username, password, profession, email, code } = req.body || {};
   if (!username || !password) {
     return res.status(400).json({ success: false, message: '请填写用户名和密码' });
   }
@@ -30,6 +75,22 @@ async function register(req, res) {
     });
   }
 
+  const normalizedEmail = String(email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(normalizedEmail)) {
+    return res.status(400).json({ success: false, message: '请填写注册邮箱' });
+  }
+  if (!CODE_RE.test(String(code || ''))) {
+    return res.status(400).json({ success: false, message: '请填写 6 位邮箱验证码' });
+  }
+  if (await User.exists({ email: normalizedEmail })) {
+    return res.status(409).json({ success: false, message: '该邮箱已注册' });
+  }
+  // 验证码校验：取该邮箱最新一条，须未使用、未过期、匹配
+  const record = await VerifyCode.findOne({ email: normalizedEmail, purpose: 'register' }).sort({ createdAt: -1 });
+  if (!record || record.used || record.expiresAt < new Date() || record.code !== String(code)) {
+    return res.status(400).json({ success: false, message: '验证码错误或已过期，请重新获取' });
+  }
+
   if (await User.exists({ username })) {
     return res.status(409).json({ success: false, message: '用户名已被占用' });
   }
@@ -40,11 +101,16 @@ async function register(req, res) {
   const user = await User.create({
     username,
     password: await bcrypt.hash(String(password), 10),
+    email: normalizedEmail,
     profession,
     role: isAdmin ? 'admin' : 'user',
     spiritStones: REWARDS.registerStones,
     lastLoginAt: new Date()
   });
+
+  // 验证码一次性作废
+  record.used = true;
+  await record.save();
 
   res.status(201).json({ success: true, data: { token: signToken(user), user: user.toJSON() } });
 }
@@ -71,4 +137,4 @@ async function me(req, res) {
   res.json({ success: true, data: { user: req.user.toJSON(), justSettledQi: settled.gained } });
 }
 
-module.exports = { register, login, me };
+module.exports = { sendCode, register, login, me };
