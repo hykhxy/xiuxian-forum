@@ -242,7 +242,7 @@
   function renderTabs() {
     tabsEl.innerHTML = '';
     const tabs = [['posts', '帖子']];
-    if (isSelf) tabs.push(['favorites', '收藏'], ['techniques', '修炼功法']);
+    if (isSelf) tabs.push(['favorites', '收藏'], ['techniques', '修炼功法'], ['backpack', '功法背包']);
     tabs.forEach(([key, label]) => {
       const t = el('div', 'tab' + (activeTab === key ? ' active' : ''), label);
       t.onclick = () => { activeTab = key; renderTabs(); loadTab(); };
@@ -288,6 +288,54 @@
       }
       contentEl.innerHTML = '';
       contentEl.appendChild(wrap);
+    } else if (activeTab === 'backpack') {
+      const r = await api.get('/techniques/backpack');
+      if (!r.ok) return emptyState(contentEl, r.message);
+      contentEl.innerHTML = '';
+      const card = el('div', 'card');
+      card.appendChild(el('div', 'page-sub', '抽卡与兑换获得的功法存放于此，装备后属性生效（多功法取最高倍率）。抽取入口：功法图鉴页「天机阁」'));
+      if (!r.data.list.length) {
+        card.appendChild(el('div', 'empty', '背包空空，去天机阁抽取一部功法吧'));
+      } else {
+        const list = el('div', null);
+        list.style.marginTop = '8px';
+        r.data.list.forEach((b) => {
+          const row = el('div', null);
+          row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--bg-soft);flex-wrap:wrap';
+          const link = el('a', null, '《' + b.name + '》');
+          link.href = 'technique-detail.html?id=' + b.id;
+          link.style.cssText = 'font-weight:600;flex:1;min-width:130px';
+          row.appendChild(gradeBadge(b.grade));
+          row.appendChild(link);
+          row.appendChild(el('span', 'form-hint', '灵气 +' + Math.round((b.expBonusRate - 1) * 100) + '% · ' + (b.source === 'draw' ? '天机抽取' : '灵石兑换')));
+          if (b.equipped) {
+            row.appendChild(el('span', 'badge realm-1', '✓ 修炼中'));
+          } else {
+            const needRealm = REALM_NAMES[b.requiredRealmLevel - 1] || '练气';
+            const realmOk = (profileUser.realm || 1) >= b.requiredRealmLevel;
+            const eqBtn = el('button', 'btn btn-sm btn-jade', '装备');
+            if (!realmOk) {
+              eqBtn.disabled = true;
+              eqBtn.title = '需境界 ' + needRealm;
+              eqBtn.textContent = '需 ' + needRealm;
+            }
+            eqBtn.onclick = async () => {
+              eqBtn.disabled = true;
+              const res = await api.post(`/techniques/${b.id}/equip`);
+              eqBtn.disabled = false;
+              if (!res.ok) return toast(res.message, 'error');
+              Auth.updateUser(res.data.user);
+              toast('已装备《' + b.name + '》，灵气获取 +' + Math.round((b.expBonusRate - 1) * 100) + '%', 'exp');
+              loadTab();
+              load();
+            };
+            row.appendChild(eqBtn);
+          }
+          list.appendChild(row);
+        });
+        card.appendChild(list);
+      }
+      contentEl.appendChild(card);
     }
   }
 
