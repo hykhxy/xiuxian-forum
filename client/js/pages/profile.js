@@ -1,10 +1,10 @@
-// 个人主页：资料 + 修行（挂机/突破）+ 签到日历 + 帖子/收藏/功法 Tab + 编辑资料/密码
+// 个人主页：资料 + 签到日历 + 帖子/收藏/功法 Tab + 编辑资料/密码
+// （第7轮：闭关修行模块已迁往「登仙」页 dengxian.html）
 (function () {
   renderNav('');
   const userId = qs('id') || Auth.userId();
   const headEl = document.getElementById('profile-head');
   const checkinCard = document.getElementById('checkin-card');
-  const cultCard = document.getElementById('cultivation-card');
   const tabsEl = document.getElementById('tabs');
   const contentEl = document.getElementById('tab-content');
 
@@ -75,102 +75,15 @@
     headEl.appendChild(head);
 
     if (isSelf) {
-      cultCard.style.display = '';
-      loadCultivation();
+      // 闭关修行已迁「登仙」页，此处留入口指引
+      const cultLink = el('a', 'btn btn-sm btn-jade', '前往登仙 · 闭关修行');
+      cultLink.href = 'dengxian.html';
+      btnRow.appendChild(cultLink);
       checkinCard.style.display = '';
       loadCheckin();
     }
     renderTabs();
     loadTab();
-  }
-
-  // ---------- 修行：挂机 + 突破 ----------
-  let cultTimer = null;
-
-  async function loadCultivation() {
-    const r = await api.get('/cultivation/status');
-    if (!r.ok) return;
-    renderCultivation(r.data);
-    if (r.data.justSettled > 0 && r.data.isIdling) {
-      // 访问自动结算不打断挂机，静默入账即可
-    }
-    clearTimeout(cultTimer);
-    if (r.data.isIdling) cultTimer = setTimeout(loadCultivation, 5000); // 挂机中每 5s 刷新
-  }
-
-  function renderCultivation(d) {
-    cultCard.innerHTML = '';
-
-    const head = el('div', 'checkin-box');
-    const left = el('div');
-    left.appendChild(el('div', 'page-title', '闭关修行', null));
-    left.firstChild.style.fontSize = '17px';
-    const tip = el('div', 'page-sub');
-    tip.textContent = d.isIdling
-      ? '吐纳中… ' + d.idleRatePerMinute + ' 灵气/分钟（' + d.realm.name + '）'
-      : '未在挂机 · ' + d.realm.name + ' 挂机速率 ' + d.idleRatePerMinute + ' 灵气/分钟';
-    left.appendChild(tip);
-    head.appendChild(left);
-
-    const idleBtn = el('button', 'btn ' + (d.isIdling ? 'btn-danger' : 'btn-jade'), d.isIdling ? '出关（结算灵气）' : '开始挂机');
-    idleBtn.onclick = async () => {
-      idleBtn.disabled = true;
-      const r = d.isIdling
-        ? await api.post('/cultivation/idle/stop')
-        : await api.post('/cultivation/idle/start');
-      if (!r.ok) { idleBtn.disabled = false; return toast(r.message, 'error'); }
-      if (d.isIdling) {
-        toast('出关：' + r.data.durationMinutes + ' 分钟收获灵气 +' + r.data.gained, 'exp');
-      } else {
-        toast('开始吐纳，灵气将随时间累积', 'success');
-      }
-      loadCultivation();
-      load(); // 刷新头部灵气
-    };
-    head.appendChild(idleBtn);
-    cultCard.appendChild(head);
-
-    // 灵气进度 + 突破
-    const pw = el('div', 'progress-wrap');
-    if (d.breakthrough) {
-      const pct = Math.min(Math.round((d.qi / d.breakthrough.cost) * 100), 100);
-      const bar = el('div', 'progress-bar');
-      const inner = el('div', 'progress-inner');
-      inner.style.width = pct + '%';
-      bar.appendChild(inner);
-      pw.appendChild(bar);
-      const pt = el('div', 'progress-text');
-      pt.appendChild(el('span', null, '灵气 ' + d.qi + ' / ' + d.breakthrough.cost));
-      pt.appendChild(el('span', null, d.realm.name + ' → ' + d.breakthrough.toRealm + '（' + pct + '%）'));
-      pw.appendChild(pt);
-
-      const row = el('div', null);
-      row.style.cssText = 'display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap';
-      const btBtn = el('button', 'btn btn-primary', '一键突破 ' + d.realm.name + ' → ' + d.breakthrough.toRealm);
-      if (d.qi < d.breakthrough.cost) btBtn.disabled = true;
-      btBtn.onclick = async () => {
-        if (!confirm('消耗 ' + d.breakthrough.cost + ' 灵气尝试突破？\n成功率 ' + Math.round(d.breakthrough.successRate * 100) + '%，失败损失 ' + d.breakthrough.failLoss + ' 灵气')) return;
-        btBtn.disabled = true;
-        const r = await api.post('/cultivation/breakthrough');
-        btBtn.disabled = false;
-        if (!r.ok) return toast(r.message, 'error');
-        if (r.data.success) toast(r.data.message, 'exp');
-        else toast(r.data.message, 'error');
-        loadCultivation();
-        load();
-      };
-      row.appendChild(btBtn);
-      const info = el('span', 'form-hint',
-        '成功率 ' + Math.round(d.breakthrough.successRate * 100) + '% · 失败损 ' + d.breakthrough.failLoss);
-      row.appendChild(info);
-      pw.appendChild(row);
-    } else {
-      const pt = el('div', 'progress-text');
-      pt.appendChild(el('span', null, '灵气 ' + d.qi));
-      pt.appendChild(el('span', null, '已至渡劫，修为圆满'));
-      pw.appendChild(pt);
-    }
-    cultCard.appendChild(pw);
   }
 
   // ---------- 签到 ----------
