@@ -12,5 +12,6 @@ router.get('/:id', optionalAuth, wrap(techniqueCtrl.detail));
 router.post('/', requireAuth, wrap(techniqueCtrl.submit));
 router.post('/:id/practice', requireAuth, wrap(techniqueCtrl.practice));
 router.post('/:id/equip', requireAuth, wrap(techniqueCtrl.equip));    // 装备背包功法
+router.post('/:id/levelup', requireAuth, wrap(techniqueCtrl.levelup)); // 功法升层
 
 module.exports = router;
