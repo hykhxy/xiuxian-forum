@@ -6,11 +6,11 @@
   <title>听曲 · 灵墟论道</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="tq-dark">
   <header id="site-nav"></header>
 
   <main class="container page">
-    <!-- 中央搜索区（视频背景 + 双层遮罩之上） -->
+    <!-- 中央搜索区 -->
     <section class="tq-hero">
       <div class="dx-title">听 曲</div>
       <div class="dx-sub">一曲仙音 · 涤荡尘心</div>
@@ -20,19 +20,15 @@
         <button class="btn btn-primary" id="tq-search-btn">寻 曲</button>
       </div>
 
-      <!-- 搜索结果列表：歌名 + 歌手，点击即播（播放交给 MetingJS 组件） -->
-      <div class="tq-results" id="tq-results"></div>
+      <!-- 搜索结果容器：保持为空，由 JS 动态插入（无任何演示数据） -->
+      <div id="search-results" class="tq-results"></div>
     </section>
   </main>
 
-  <!-- 底部播放器：方案A <meting-js>（动态注入），加载失败自动降级方案B 官方 iframe -->
-  <div id="tq-player">
-    <div id="tq-mode-tip" class="tq-mode-tip"></div>
-    <div id="tq-meting-box"></div>
-    <div id="tq-iframe-box"></div>
-  </div>
+  <!-- MetingJS 播放器容器（组件由 JS 动态注入，fixed 吸底模式） -->
+  <div id="player-container"></div>
 
-  <!-- 关闭全局播放栏（本页自带播放器），再加载公共脚本（player.js 仍负责注入全站视频背景） -->
+  <!-- 关闭全局播放栏（本页用 MetingJS 组件），再加载公共脚本（player.js 仍注入全站视频背景，本页由 CSS 隐藏） -->
   <script>window.DX_PLAYER_OFF = true;</script>
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
