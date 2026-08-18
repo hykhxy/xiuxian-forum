@@ -10,7 +10,7 @@
   <header id="site-nav"></header>
 
   <main class="container page">
-    <!-- 中央搜索区（视频背景 body::before 遮罩之上） -->
+    <!-- 中央搜索区（视频背景 + 双层遮罩之上） -->
     <section class="tq-hero">
       <div class="dx-title">听 曲</div>
       <div class="dx-sub">一曲仙音 · 涤荡尘心</div>
@@ -20,40 +20,19 @@
         <button class="btn btn-primary" id="tq-search-btn">寻 曲</button>
       </div>
 
-      <!-- 搜索结果下拉列表：歌名 + 歌手，点击即播 -->
+      <!-- 搜索结果列表：歌名 + 歌手，点击即播（播放交给 MetingJS 组件） -->
       <div class="tq-results" id="tq-results"></div>
-
-      <!-- 网易云官方外链播放器（直链不可用时的兜底，VIP 亦可听） -->
-      <div class="tq-embed" id="tq-embed" style="display:none">
-        <div class="tq-embed-tip" id="tq-embed-tip">直链不可用，已切换网易云音乐官方播放器</div>
-        <div class="tq-embed-box" id="tq-embed-box"></div>
-      </div>
     </section>
   </main>
 
-  <!-- 页面专属底部播放器（全局播放栏已通过 DX_PLAYER_OFF 关闭） -->
+  <!-- 底部播放器：方案A <meting-js>（动态注入），加载失败自动降级方案B 官方 iframe -->
   <div id="tq-player">
-    <div class="dxp-main">
-      <img class="dxp-cover" id="tq-cover" alt="封面">
-      <div class="dxp-info">
-        <div class="dxp-name" id="tq-name">虚位以待</div>
-        <div class="dxp-artist" id="tq-artist">搜索一首曲子吧</div>
-      </div>
-      <button class="dxp-btn" id="tq-prev" title="上一首">⏮</button>
-      <button class="dxp-btn dxp-play" id="tq-toggle" title="播放/暂停">▶</button>
-      <button class="dxp-btn" id="tq-next" title="下一首">⏭</button>
-      <span class="dxp-time" id="tq-cur">0:00</span>
-      <input class="dxp-progress" id="tq-progress" type="range" min="0" max="100" value="0" step="0.1">
-      <span class="dxp-time" id="tq-dur">0:00</span>
-      <span class="dxp-volglyph">♪</span>
-      <input class="dxp-vol" id="tq-vol" type="range" min="0" max="1" value="0.7" step="0.01">
-      <button class="dxp-btn" id="tq-lrc-btn" title="歌词">词</button>
-      <button class="dxp-btn" id="tq-embed-btn" title="切换官方播放器">官</button>
-    </div>
-    <div class="tq-lyric" id="tq-lyric"><div class="dxp-lrc-inner" id="tq-lrc-inner"></div></div>
+    <div id="tq-mode-tip" class="tq-mode-tip"></div>
+    <div id="tq-meting-box"></div>
+    <div id="tq-iframe-box"></div>
   </div>
 
-  <!-- 关闭全局播放栏（本页自带播放器），再加载公共脚本 -->
+  <!-- 关闭全局播放栏（本页自带播放器），再加载公共脚本（player.js 仍负责注入全站视频背景） -->
   <script>window.DX_PLAYER_OFF = true;</script>
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
