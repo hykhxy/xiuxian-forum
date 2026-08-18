@@ -48,7 +48,7 @@
     document.getElementById('page-sub').textContent = '';
     (async () => {
       const r = await api.get('/posts/' + editId);
-      if (!r.ok) { toast(r.message, 'error'); return location.href = 'index.html'; }
+      if (!r.ok) { toast(r.message, 'error'); return location.href = 'posts.html'; }
       if (!r.data.isOwner) { toast('只能编辑自己的帖子', 'error'); return location.href = 'post-detail.html?id=' + editId; }
       const p = r.data.post;
       titleInput.value = p.title;
