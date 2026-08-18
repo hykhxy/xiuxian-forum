@@ -22,6 +22,12 @@
 
       <!-- 搜索结果下拉列表：歌名 + 歌手，点击即播 -->
       <div class="tq-results" id="tq-results"></div>
+
+      <!-- 网易云官方外链播放器（直链不可用时的兜底，VIP 亦可听） -->
+      <div class="tq-embed" id="tq-embed" style="display:none">
+        <div class="tq-embed-tip" id="tq-embed-tip">直链不可用，已切换网易云音乐官方播放器</div>
+        <div class="tq-embed-box" id="tq-embed-box"></div>
+      </div>
     </section>
   </main>
 
@@ -42,6 +48,7 @@
       <span class="dxp-volglyph">♪</span>
       <input class="dxp-vol" id="tq-vol" type="range" min="0" max="1" value="0.7" step="0.01">
       <button class="dxp-btn" id="tq-lrc-btn" title="歌词">词</button>
+      <button class="dxp-btn" id="tq-embed-btn" title="切换官方播放器">官</button>
     </div>
     <div class="tq-lyric" id="tq-lyric"><div class="dxp-lrc-inner" id="tq-lrc-inner"></div></div>
   </div>
