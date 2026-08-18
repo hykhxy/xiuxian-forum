@@ -820,6 +820,73 @@ select option { background: var(--paper); color: var(--ink); }
   .dxp-cover { width: 34px; height: 34px; }
   .dxp-lyric { width: min(300px, calc(100vw - 24px)); height: 260px; }
 }
+
+/* ============================================================
+   十四、听曲页（第8轮）：中央搜索 + 结果列表 + 页面播放器
+   ============================================================ */
+.tq-hero { text-align: center; padding: 60px 0 30px; }
+
+.tq-search-wrap {
+  display: flex; gap: 10px; justify-content: center;
+  max-width: 620px; margin: 30px auto 0;
+}
+.tq-input {
+  flex: 1; padding: 12px 18px;
+  font-size: 15px; letter-spacing: 1px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid var(--line-strong); border-radius: 6px;
+  color: var(--ink); outline: none;
+  transition: border-color .16s, box-shadow .16s;
+}
+.tq-input:focus { border-color: var(--jade-deep); box-shadow: 0 0 0 3px rgba(168, 218, 220, 0.35); }
+
+/* 搜索结果列表 */
+.tq-results {
+  max-width: 620px; margin: 14px auto 0; text-align: left;
+  background: rgba(253, 251, 247, 0.93);
+  border: 1px solid var(--line-strong); border-radius: 8px;
+  box-shadow: var(--shadow-ink); overflow: hidden;
+}
+.tq-results:empty { display: none; }
+.tq-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 18px; border-bottom: 1px dashed var(--line);
+  cursor: pointer; transition: background .15s;
+}
+.tq-item:last-child { border-bottom: none; }
+.tq-item:hover { background: rgba(168, 218, 220, 0.18); }
+.tq-item-info { min-width: 0; }
+.tq-item-name { font-family: var(--font-brush); font-size: 15.5px; color: var(--ink); letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tq-item-artist { font-size: 12px; color: var(--ink-faint); margin-top: 2px; }
+.tq-item-play { font-size: 12px; color: var(--cinnabar); font-family: var(--font-brush); letter-spacing: 1px; flex-shrink: 0; opacity: 0; transform: translateX(6px); transition: all .18s; }
+.tq-item:hover .tq-item-play { opacity: 1; transform: translateX(0); }
+.tq-loading { justify-content: center; color: var(--ink-faint); font-family: var(--font-brush); letter-spacing: 3px; }
+
+/* 页面专属播放器（复用 .dxp-* 控件样式，容器独立） */
+#tq-player {
+  position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%);
+  z-index: 150; width: min(960px, calc(100vw - 20px));
+  background: rgba(253, 251, 247, 0.92);
+  border: 1px solid var(--line-strong); border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(43, 43, 43, 0.16);
+  backdrop-filter: blur(8px);
+  will-change: transform;
+}
+.tq-lyric {
+  display: none; position: absolute; bottom: calc(100% + 8px); right: 0;
+  width: 300px; height: 320px;
+  background: linear-gradient(180deg, rgba(253,251,247,0.97), rgba(253,251,247,0.92));
+  border: 1px solid var(--line-strong); border-radius: 8px;
+  box-shadow: var(--shadow-ink-hover); overflow: hidden; padding: 16px 0;
+}
+.tq-lyric.show { display: block; animation: lrcIn .3s ease; }
+
+@media (max-width: 720px) {
+  .tq-search-wrap { flex-direction: column; }
+  .tq-results { max-width: none; }
+  #tq-player { width: calc(100vw - 16px); bottom: 8px; }
+  .tq-lyric { width: min(300px, calc(100vw - 24px)); height: 260px; }
+}
 /* 播放器不遮核心内容：为 body 留出底部空间 */
 body { padding-bottom: 64px; }
 
