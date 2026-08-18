@@ -27,7 +27,7 @@
     var failTimer = setTimeout(function () { fallback(); }, 6000); // 加载超时降级
     function fallback() {
       clearTimeout(failTimer);
-      if (v.parentNode) v.remove();          // 移除后露出下层 ink-mountain 静态山景
+      if (v.parentNode) v.remove();          // 移除后由 .no-video 显示降级图 ink-fallback
       scene.classList.add('no-video');
     }
     v.addEventListener('loadeddata', function () { clearTimeout(failTimer); });
