@@ -118,24 +118,24 @@
     return null;
   }
 
-  // 拉取直链（GDStudio 聚合，支持 netease/qq/kugou/kuwo）
+  // 拉取直链（经本站后端代理 /api/music/url，支持 netease/qq/kugou/kuwo；规避浏览器直连第三方的不稳定）
   function fetchUrl(item) {
-    return fetchJSON(GD + '?types=url&source=' + item.source + '&id=' + encodeURIComponent(item.id)).then(function (r) {
-      if (!r || !r.url) {
+    return fetchJSON(API_BASE_URL + '/music/url?id=' + encodeURIComponent(item.id) + '&source=' + item.source).then(function (r) {
+      if (!r.success || !r.data.url) {
         throw new Error('「' + (item.name || item.id) + '」源站暂无直链（可能版权下架或需 VIP），请换一首');
       }
-      item.url = r.url;
+      item.url = r.data.url;
       return item;
     });
   }
 
-  // 拉取封面 / 歌词；歌名歌手从 LRC [ti:]/[ar:] 解析
+  // 拉取封面 / 歌词（经本站后端代理）；歌名歌手从 LRC [ti:]/[ar:] 解析
   function fetchMeta(item) {
-    var picP = fetchJSON(GD + '?types=pic&source=' + item.source + '&id=' + encodeURIComponent(item.id) + '&size=90')
-      .then(function (r) { if (r && r.url) item.pic = r.url; }).catch(function () {});
-    var lrcP = fetchJSON(GD + '?types=lyric&source=' + item.source + '&id=' + encodeURIComponent(item.id))
+    var picP = fetchJSON(API_BASE_URL + '/music/pic?id=' + encodeURIComponent(item.id))
+      .then(function (r) { if (r.success && r.data.url) item.pic = r.data.url; }).catch(function () {});
+    var lrcP = fetchJSON(API_BASE_URL + '/music/lyric?id=' + encodeURIComponent(item.id))
       .then(function (r) {
-        var raw = (r && (r.lyric || r.lrc)) || '';
+        var raw = (r.success && r.data.lyric) || '';
         item.name = item.name || tagOf(raw, 'ti') || (item.source + ' · ' + item.id);
         item.artist = item.artist || tagOf(raw, 'ar') || '';
         return parseLRC(raw);
@@ -230,12 +230,13 @@
 
   function loadPlaylist(source, id) {
     toastUI('载入歌单 ' + id + ' …', 'info');
+    // 歌单经本站代理的搜索替代：直接请求 GD 歌单接口由后端转发不可行时，退化为提示手动加歌
     fetchJSON(GD + '?types=playlist&source=' + source + '&id=' + id).then(function (arr) {
       if (!Array.isArray(arr) || !arr.length) throw new Error('歌单为空或不可用');
       state.list = arr.map(function (s) { return { source: source, id: String(s.id), name: s.name || s.title, artist: s.artist || s.author || '' }; });
       playIndex(0);
       toastUI('歌单载入成功，共 ' + state.list.length + ' 首', 'success');
-    }).catch(function (e) { toastUI(e.message || '歌单获取失败', 'error'); });
+    }).catch(function (e) { toastUI(e.message || '歌单获取失败（第三方歌单接口不稳，可改用歌曲链接/ID 添加）', 'error'); });
   }
 
   /* ------------------------------------------------------------
