@@ -256,29 +256,38 @@ function renderRichText(container, text) {
 function openTrueSelf() {
   document.querySelector('.zw-mask')?.remove();
   const mask = el('div', 'zw-mask');
-  const card = el('div', 'zw-card sheen');
+  const card = el('div', 'zw-card');
 
-  // ---- 第19轮：性别动态背景图（male→图1 / female→图2），localStorage 持久化 ----
-  const ZW_BG = { male: 'assets/img/zw-bg-male.jpg', female: 'assets/img/zw-bg-female.jpg' };
+  // ---- 第20轮：2D 角色立绘按性别切换（左区 45%）----
+  // localStorage.gender 为准（兼容旧键 user_gender）；无数据默认男
+  const ZW_CHAR = { male: 'assets/char-male.png', female: 'assets/char-female.png' };
   const genderBtn = el('button', 'zw-gender-toggle', '');
-  const bgLayer = el('div', 'zw-bg');
-  const shade = el('div', 'zw-shade');          // 遮罩：图之上、内容之下
+  const charArea = el('div', 'zw-char-area');
+  const charImg = el('img', 'zw-char-img');
+  const charGlow = el('div', 'zw-char-glow');
+
+  function readGender() {
+    const g = localStorage.getItem('gender') || localStorage.getItem('user_gender');
+    return g === 'female' ? 'female' : 'male';   // 兜底默认男
+  }
   function applyGender(g) {
-    bgLayer.style.backgroundImage = `url("${ZW_BG[g]}")`;
+    charImg.src = ZW_CHAR[g];
+    charImg.alt = g === 'male' ? '白衣持剑男修' : '白衣回眸女修';
+    charGlow.className = 'zw-char-glow ' + (g === 'male' ? 'glow-male' : 'glow-female');
     genderBtn.textContent = g === 'male' ? '♂' : '♀';
     genderBtn.title = g === 'male' ? '当前：乾造（点击切换坤造）' : '当前：坤造（点击切换乾造）';
   }
-  let userGender = localStorage.getItem('user_gender');
-  if (userGender !== 'male' && userGender !== 'female') userGender = 'male'; // 默认男
+  let userGender = readGender();
   applyGender(userGender);
   genderBtn.onclick = () => {
     userGender = userGender === 'male' ? 'female' : 'male';
-    localStorage.setItem('user_gender', userGender);
+    localStorage.setItem('gender', userGender);          // 本轮规范键
+    localStorage.setItem('user_gender', userGender);     // 兼容旧键
     applyGender(userGender);
-    toast(userGender === 'male' ? '已切换：乾造（男）背景' : '已切换：坤造（女）背景', 'info');
+    toast(userGender === 'male' ? '已切换：乾造（男）' : '已切换：坤造（女）', 'info');
   };
-  card.appendChild(bgLayer);
-  card.appendChild(shade);
+  charArea.appendChild(charGlow);
+  charArea.appendChild(charImg);
 
   // 头部
   const head = el('div', 'zw-head');
@@ -290,22 +299,9 @@ function openTrueSelf() {
   card.appendChild(head);
 
   const body = el('div', 'zw-body');
+  body.appendChild(charArea);   // 左：角色区 45%
 
-  // 左：打坐人物剪影（纯 CSS）
-  const figure = el('div', 'zw-figure-wrap');
-  const halo = el('div', 'zw-halo');
-  const figureEl = el('div', 'zw-figure', '🧘');
-  figureEl.title = '吐纳打坐中';
-  halo.appendChild(figureEl);
-  const ripple1 = el('div', 'zw-ripple');
-  const ripple2 = el('div', 'zw-ripple zw-ripple-2');
-  figure.appendChild(halo);
-  figure.appendChild(ripple1);
-  figure.appendChild(ripple2);
-  figure.appendChild(el('div', 'zw-figure-caption', '凝神吐纳'));
-  body.appendChild(figure);
-
-  // 右：两列属性
+  // 右：属性区 55%（两列）
   const statsBox = el('div', 'zw-stats');
   statsBox.appendChild(el('div', 'zw-loading', '推演命格中……'));
   body.appendChild(statsBox);
