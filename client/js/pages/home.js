@@ -6,7 +6,8 @@
   const CARDS = [
     { key: 'lundaotai', glyph: '论', name: '论道台', href: 'posts.html', desc: '问道、感悟、杂谈与交易，万千道友在此坐而论道。', stat: '灵气涌动 · 发帖得灵气' },
     { key: 'cangjingge', glyph: '经', name: '藏经阁', href: 'techniques.html', desc: '黄玄地天仙五品功法尽收于此，抽取兑换，皆可修行。', stat: '功法典籍 · 天机抽取' },
-    { key: 'xiulianshi', glyph: '修', name: '修炼室', href: 'profile.html', desc: '闭关挂机聚灵气，一键突破登境界，签到日历记道心。', stat: '挂机 · 突破 · 签到' }
+    { key: 'dengxian', glyph: '仙', name: '登仙', href: 'dengxian.html', desc: '云雾为帐闭关挂机，聚灵气，破境界，一朝登仙。', stat: '闭关 · 挂机 · 突破' },
+    { key: 'dongfu', glyph: '府', name: '洞府', href: 'profile.html', desc: '签到日历、功法背包、收藏与道友资料，皆归洞府。', stat: '签到 · 背包 · 收藏' }
   ];
   if (Auth.isAdmin()) {
     CARDS.push({ key: 'zhishitang', glyph: '执', name: '执事堂', href: 'admin.html', desc: '功法审核、帖子置顶加精、洞府诸事治理。', stat: '管理员专用' });
