@@ -14,6 +14,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const cultivationRoutes = require('./routes/cultivationRoutes');
 const musicRoutes = require('./routes/musicRoutes');
 const avatarRoutes = require('./routes/avatarRoutes');
+const sectRoutes = require('./routes/sectRoutes');
+const warRoutes = require('./routes/warRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
@@ -71,6 +73,8 @@ app.use('/api/techniques', techniqueRoutes);
 app.use('/api/cultivation', cultivationRoutes);
 app.use('/api/music', musicRoutes);   // 音乐搜索/直链/封面/歌词 代理（听曲页与全局播放器共用）
 app.use('/api/users/me/avatar', avatarRoutes);  // 头像：本地上传 / AI 生成
+app.use('/api/sects', sectRoutes);      // 宗门
+app.use('/api/wars', warRoutes);        // 战场（武斗/文斗）
 app.use('/api/admin', adminRoutes);
 
 // 前端静态托管（单服务部署：Express 同时提供 API 与页面）
