@@ -3,7 +3,7 @@ const Post = require('../models/Post');
 const User = require('../models/User');
 const Comment = require('../models/Comment');
 const { toAuthorSummary } = require('../utils/serialize');
-const { REWARDS, grantExp } = require('../utils/reward');
+const { REWARDS, grantQi } = require('../utils/reward');
 
 // GET /api/admin/techniques 审核（默认待审核）
 async function listTechniques(req, res) {
@@ -63,7 +63,7 @@ async function reviewTechnique(req, res) {
     // 投稿奖励（审核通过时一次性发放）
     const submitter = await User.findById(technique.submitter);
     if (submitter) {
-      grantExp(submitter, REWARDS.submitAcceptedExp);
+      grantQi(submitter, REWARDS.submitAcceptedQi);
       submitter.spiritStones += REWARDS.submitAcceptedStones;
       await submitter.save();
     }
