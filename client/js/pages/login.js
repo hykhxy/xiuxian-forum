@@ -1,6 +1,6 @@
-// 登录/注册（第2轮：用户名+密码+职业，职业终身不可更改）
+// 登录/注册（第5轮：卷轴令牌页；逻辑同前——用户名+密码+职业，职业终身不可更改）
 (function () {
-  renderNav('');
+  initInkScene();   // 登录页无导航栏，手动注入水墨背景
 
   const tabLogin = document.getElementById('tab-login');
   const tabRegister = document.getElementById('tab-register');
