@@ -45,20 +45,51 @@ function qs(name) {
   return new URLSearchParams(location.search).get(name);
 }
 
+// ---------- 水墨动态背景（元素一次性注入，动画全部由 CSS @keyframes 驱动） ----------
+function initInkScene() {
+  if (document.querySelector('.ink-scene')) return;
+  const scene = el('div', 'ink-scene');
+  scene.setAttribute('aria-hidden', 'true');
+  scene.appendChild(el('div', 'ink-mountain'));
+  scene.appendChild(el('div', 'ink-water'));
+  scene.appendChild(el('div', 'ink-cloud ink-cloud-1'));
+  scene.appendChild(el('div', 'ink-cloud ink-cloud-2'));
+  scene.appendChild(el('div', 'ink-cloud ink-cloud-3'));
+  scene.appendChild(el('div', 'ink-mist'));
+  const flies = el('div', 'ink-fireflies');
+  for (let i = 0; i < 8; i++) flies.appendChild(el('i'));
+  scene.appendChild(flies);
+  document.body.appendChild(scene);
+}
+
+// 给容器内所有 .card 注入两粒面板萤火（每轮渲染后调用）
+function sprinkleFireflies(container) {
+  (container || document).querySelectorAll('.card').forEach((card) => {
+    if (!card.querySelector('.ff')) {
+      card.appendChild(el('i', 'ff'));
+      card.appendChild(el('i', 'ff'));
+    }
+  });
+}
+
 // ---------- 导航栏 ----------
 function renderNav(active) {
+  initInkScene();
   const nav = document.getElementById('site-nav');
   if (!nav) return;
   nav.innerHTML = '';
 
-  const brand = el('a', 'nav-brand', '灵墟论道');
+  const brand = el('a', 'nav-brand');
   brand.href = 'index.html';
+  brand.appendChild(el('span', 'seal', '灵'));
+  brand.appendChild(document.createTextNode('灵墟论道'));
 
   const menu = el('nav', 'nav-menu');
   const links = [
-    { key: 'index', href: 'index.html', label: '论坛' },
-    { key: 'techniques', href: 'techniques.html', label: '功法图鉴' },
-    { key: 'post-edit', href: 'post-edit.html', label: '发帖' }
+    { key: 'index', href: 'index.html', label: '山门' },
+    { key: 'posts', href: 'posts.html', label: '论道台' },
+    { key: 'techniques', href: 'techniques.html', label: '藏经阁' },
+    { key: 'post-edit', href: 'post-edit.html', label: '执笔' }
   ];
   links.forEach((l) => {
     const a = el('a', 'nav-link' + (active === l.key ? ' active' : ''), l.label);
@@ -93,6 +124,7 @@ function renderNav(active) {
   nav.appendChild(brand);
   nav.appendChild(menu);
   nav.appendChild(right);
+  sprinkleFireflies();
 }
 
 // ---------- 头像（无图时用道号首字的彩色圆） ----------
@@ -193,8 +225,8 @@ function emptyState(container, text) {
   container.appendChild(d);
 }
 
-// ---------- 退出提示（后端休眠唤醒慢时的首次请求） ----------
+// ---------- 加载提示 ----------
 function loadingState(container, text) {
   container.innerHTML = '';
-  container.appendChild(el('div', 'empty loading', text || '灵力凝聚中……'));
+  container.appendChild(el('div', 'empty loading', text || '灵气凝聚中……'));
 }
