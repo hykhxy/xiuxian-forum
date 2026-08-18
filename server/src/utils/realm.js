@@ -1,36 +1,19 @@
-// 境界表：门槛为累计修为，等级越高突破越难
+// 境界体系（第3轮）：8 大境界，突破制（不再由累计经验推导）
+// rate        挂机灵气获取速度（灵气/分钟）
+// cost        突破到下一境界所需灵气（渡劫为终点，无 cost）
+// successRate 突破基准成功率（随境界降低；血修另有 +0.1 加成，见 utils/cultivation.js）
 const REALMS = [
-  { level: 1, name: '练气一层', exp: 0 },
-  { level: 2, name: '练气二层', exp: 10 },
-  { level: 3, name: '练气三层', exp: 25 },
-  { level: 4, name: '练气四层', exp: 50 },
-  { level: 5, name: '练气五层', exp: 90 },
-  { level: 6, name: '练气六层', exp: 150 },
-  { level: 7, name: '练气七层', exp: 240 },
-  { level: 8, name: '练气八层', exp: 360 },
-  { level: 9, name: '练气九层', exp: 520 },
-  { level: 10, name: '筑基期', exp: 800 },
-  { level: 11, name: '金丹期', exp: 1300 },
-  { level: 12, name: '元婴期', exp: 2200 },
-  { level: 13, name: '化神期', exp: 3800 },
-  { level: 14, name: '炼虚期', exp: 6500 },
-  { level: 15, name: '合体期', exp: 11000 },
-  { level: 16, name: '大乘期', exp: 18000 },
-  { level: 17, name: '渡劫期', exp: 30000 },
-  { level: 18, name: '仙人', exp: 50000 }
+  { level: 1, name: '练气', rate: 100,   cost: 1000,   successRate: 0.9 },
+  { level: 2, name: '筑基', rate: 200,   cost: 2000,   successRate: 0.8 },
+  { level: 3, name: '金丹', rate: 400,   cost: 4000,   successRate: 0.7 },
+  { level: 4, name: '元婴', rate: 800,   cost: 8000,   successRate: 0.6 },
+  { level: 5, name: '化神', rate: 1600,  cost: 16000,  successRate: 0.5 },
+  { level: 6, name: '合体', rate: 3200,  cost: 32000,  successRate: 0.4 },
+  { level: 7, name: '大乘', rate: 6400,  cost: 64000,  successRate: 0.3 },
+  { level: 8, name: '渡劫', rate: 12800, cost: null,   successRate: null }
 ];
 
 const MAX_LEVEL = REALMS[REALMS.length - 1].level;
-
-// 累计修为 → 境界等级
-function calcRealmLevel(exp) {
-  let level = 1;
-  for (const r of REALMS) {
-    if (exp >= r.exp) level = r.level;
-    else break;
-  }
-  return level;
-}
 
 function getRealmByLevel(level) {
   const clamped = Math.min(Math.max(Number(level) || 1, 1), MAX_LEVEL);
@@ -42,4 +25,4 @@ function getNextRealm(level) {
   return getRealmByLevel(level + 1);
 }
 
-module.exports = { REALMS, MAX_LEVEL, calcRealmLevel, getRealmByLevel, getNextRealm };
+module.exports = { REALMS, MAX_LEVEL, getRealmByLevel, getNextRealm };
