@@ -10,6 +10,7 @@ const {
   pickOne,
   fallbackGrades
 } = require('../utils/draw');
+const { calcLevelStats, statsDiff, levelUpCost, buildGradeStats } = require('../utils/techniqueStats');
 
 function escapeRegex(str) {
   return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -28,6 +29,9 @@ function toTechniqueItem(t) {
     difficulty: t.difficulty,
     requiredRealmLevel: t.requiredRealmLevel,
     price: t.price,
+    maxLevel: t.maxLevel,
+    growthRate: t.growthRate,
+    baseStats: t.baseStats,
     coverImage: t.coverImage,
     submitter: toAuthorSummary(t.submitter),
     status: t.status,
@@ -86,11 +90,31 @@ async function detail(req, res) {
   if (t.status !== 'approved' && !isSubmitter && !isAdmin) {
     return res.status(404).json({ success: false, message: '功法不存在或未上架' });
   }
+  const practiced = req.user && req.user.practicingTechniques.find((p) => String(p.technique) === String(t._id));
+  let myEntry = null;
+  if (practiced && t.maxLevel) {
+    const level = practiced.currentLevel || 1;
+    const cur = practiced.currentStats || calcLevelStats(t.baseStats, t.growthRate, level);
+    myEntry = {
+      level,
+      maxLevel: t.maxLevel,
+      stats: cur,
+      nextPreview: level < t.maxLevel
+        ? {
+            level: level + 1,
+            cost: levelUpCost(t.baseStats, level + 1),
+            gained: statsDiff(cur, calcLevelStats(t.baseStats, t.growthRate, level + 1))
+          }
+        : null
+    };
+  }
   res.json({
     success: true,
     data: {
       technique: toTechniqueItem(t),
-      practicedByMe: !!(req.user && req.user.practicingTechniques.some((p) => String(p.technique) === String(t._id)))
+      practicedByMe: !!practiced,
+      myEntry,
+      myQi: req.user ? req.user.qi : undefined
     }
   });
 }
@@ -103,6 +127,8 @@ async function submit(req, res) {
   if (await Technique.exists({ name: String(name || '').trim() })) {
     return res.status(409).json({ success: false, message: '功法名已存在' });
   }
+  // 品阶自动生成层数数值（与种子一致；投稿人不可自定）
+  const gs = buildGradeStats(grade);
   const technique = await Technique.create({
     name,
     type,
@@ -114,6 +140,9 @@ async function submit(req, res) {
     requiredRealmLevel: cfg.requiredRealmLevel,
     price: cfg.price,
     difficulty: difficulty || 3,
+    maxLevel: gs.maxLevel,
+    growthRate: gs.growthRate,
+    baseStats: gs.baseStats,
     coverImage: coverImage || '',
     submitter: req.userId,
     status: 'pending'
@@ -234,7 +263,9 @@ async function equip(req, res) {
   user.practicingTechniques.push({
     technique: technique._id,
     expBonusRate: technique.expBonusRate,
-    startedAt: new Date()
+    startedAt: new Date(),
+    currentLevel: 1,
+    currentStats: calcLevelStats(technique.baseStats, technique.growthRate, 1)
   });
   await user.save();
   await Technique.updateOne({ _id: technique._id }, { $inc: { practitionerCount: 1 } });
@@ -275,11 +306,61 @@ async function practice(req, res) {
   user.practicingTechniques.push({
     technique: technique._id,
     expBonusRate: technique.expBonusRate,
-    startedAt: new Date()
+    startedAt: new Date(),
+    currentLevel: 1,
+    currentStats: calcLevelStats(technique.baseStats, technique.growthRate, 1)
   });
   await user.save();
   await Technique.updateOne({ _id: technique._id }, { $inc: { practitionerCount: 1 } });
   res.json({ success: true, data: { user: user.toJSON(), technique: { id: technique._id, name: technique.name } } });
 }
 
-module.exports = { list, detail, submit, practice, draw, backpack, equip };
+// POST /api/techniques/:id/levelup 功法升层（修炼一层 → 重算属性 → 存库）
+// 消耗灵气 = baseStats.cultivation × 目标层（挂机产出闭环）
+async function levelup(req, res) {
+  const technique = await Technique.findById(req.params.id);
+  if (!technique || technique.status !== 'approved') {
+    return res.status(404).json({ success: false, message: '功法不存在或未上架' });
+  }
+  const user = req.user;
+  const entry = user.practicingTechniques.find((p) => String(p.technique) === String(technique._id));
+  if (!entry) {
+    return res.status(400).json({ success: false, message: '尚未修炼此功法，请先装备' });
+  }
+  const currentLevel = entry.currentLevel || 1;
+  if (currentLevel >= technique.maxLevel) {
+    return res.status(400).json({ success: false, message: `此功法已修至最高层（${technique.maxLevel} 层）` });
+  }
+  const targetLevel = currentLevel + 1;
+  const cost = levelUpCost(technique.baseStats, targetLevel);
+  if (user.qi < cost) {
+    return res.status(400).json({ success: false, message: `灵气不足，升至第 ${targetLevel} 层需 ${cost} 灵气（当前 ${user.qi}）` });
+  }
+
+  const prevStats = entry.currentStats || calcLevelStats(technique.baseStats, technique.growthRate, currentLevel);
+  const nextStats = calcLevelStats(technique.baseStats, technique.growthRate, targetLevel);
+
+  user.qi -= cost;
+  entry.currentLevel = targetLevel;
+  entry.currentStats = nextStats;
+  await user.save();
+
+  const hasNext = targetLevel < technique.maxLevel;
+  res.json({
+    success: true,
+    data: {
+      technique: { id: technique._id, name: technique.name, grade: technique.grade },
+      level: targetLevel,
+      maxLevel: technique.maxLevel,
+      cost,
+      gained: statsDiff(prevStats, nextStats),       // 本次升级五维增量
+      currentStats: nextStats,
+      nextPreview: hasNext
+        ? { level: targetLevel + 1, cost: levelUpCost(technique.baseStats, targetLevel + 1), gained: statsDiff(nextStats, calcLevelStats(technique.baseStats, technique.growthRate, targetLevel + 1)) }
+        : null,
+      qi: user.qi
+    }
+  });
+}
+
+module.exports = { list, detail, submit, practice, draw, backpack, equip, levelup };
