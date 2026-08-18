@@ -19,6 +19,24 @@
     categorySelect.appendChild(opt);
   });
 
+  // 预设标签快捷按钮（点击追加到标签输入框）
+  const PRESET_TAGS = ['求助', '炫耀', '交易'];
+  const tagQuick = el('div', null);
+  tagQuick.style.cssText = 'display:flex;gap:6px;margin-top:6px;flex-wrap:wrap';
+  PRESET_TAGS.forEach((t) => {
+    const b = el('button', 'btn btn-sm', '#' + t);
+    b.type = 'button';
+    b.onclick = () => {
+      const cur = tagsInput.value.split(/[,，]/).map((x) => x.trim()).filter(Boolean);
+      if (cur.includes(t)) return toast('已添加过该标签', 'error');
+      if (cur.length >= 5) return toast('标签最多 5 个', 'error');
+      cur.push(t);
+      tagsInput.value = cur.join(', ');
+    };
+    tagQuick.appendChild(b);
+  });
+  tagsInput.parentElement.appendChild(tagQuick);
+
   function updateCount() {
     countEl.textContent = contentInput.value.length + ' / 10000';
   }
