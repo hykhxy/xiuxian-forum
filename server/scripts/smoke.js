@@ -256,13 +256,18 @@ async function call(method, path, { token, body } = {}) {
   ok(after.qi - before.qi === 18, '投稿被采纳灵气+18（法修15×1.2）', { before: before.qi, after: after.qi });
   ok(after.spiritStones - before.spiritStones === 20, '投稿被采纳灵石+20');
 
-  // 22. 兑换修炼（黄阶练气可修）
+  // 22. 兑换修炼（黄阶练气可修；兑换同时入背包）
   const stonesBefore = after.spiritStones;
   const prac = await call('POST', `/techniques/${techId}/practice`, { token: userToken });
   ok(prac.success === true && prac.data.user.spiritStones === stonesBefore - 50, '兑换黄阶功法扣 50 灵石');
   ok(
     prac.data.user.practicingTechniques.some((p) => String(p.technique) === String(techId)),
     '已修炼功法入档'
+  );
+  const bp1 = await call('GET', '/techniques/backpack', { token: userToken });
+  ok(
+    bp1.data.list.some((b) => String(b.id) === String(techId) && b.source === 'practice' && b.equipped === true),
+    '兑换功法入背包且标记已装备'
   );
   const pracAgain = await call('POST', `/techniques/${techId}/practice`, { token: userToken });
   ok(pracAgain.status === 400, '重复修炼返回 400');
@@ -324,7 +329,44 @@ async function call(method, path, { token, body } = {}) {
   const gone = await call('GET', `/posts/${postId}`);
   ok(gone.status === 404, '删除后 404');
 
-  // 29. 管理统计
+  // 29. 抽卡系统（妖修用户：100 注册灵石正好抽一次）
+  const monsterName = '天命妖子' + ts;
+  const regM = await call('POST', '/auth/register', {
+    body: { username: monsterName, password: 'mon123', profession: 'monster' }
+  });
+  ok(regM.success === true, '注册妖修（抽卡测试）');
+  const monToken = regM.data.token;
+
+  const drawPoor = await call('POST', '/techniques/draw', { token: adminToken });
+  // admin 灵石不确定，此处只测确定性路径：妖修先抽一次
+  const draw1 = await call('POST', '/techniques/draw', { token: monToken });
+  ok(draw1.success === true, '抽卡成功（消耗100灵石）');
+  ok(['黄阶', '玄阶', '地阶', '天阶'].includes(draw1.data.grade), '命中品阶在卡池四档内', draw1.data.grade);
+  ok(draw1.data.newlyOwned === true && draw1.data.duplicated === false, '首次抽取必为新功法');
+  ok(draw1.data.spiritStones === 0, '抽卡后灵石归零（100-100）', draw1.data.spiritStones);
+  ok(draw1.data.technique && draw1.data.technique.name, '返回功法详情');
+
+  const draw2 = await call('POST', '/techniques/draw', { token: monToken });
+  ok(draw2.status === 400 && /灵石不足/.test(draw2.message), '灵石不足抽卡返回 400', draw2.message);
+
+  // 背包
+  const bp = await call('GET', '/techniques/backpack', { token: monToken });
+  ok(bp.success === true && bp.data.total === 1, '背包含 1 部抽得功法');
+  const drawnTech = bp.data.list[0];
+  ok(drawnTech.equipped === false && drawnTech.source === 'draw', '背包项含装备状态与来源');
+
+  // 装备：黄阶练气可装（success）；玄阶以上有境界门槛（403）—— 两者皆为有效行为
+  const eq = await call('POST', `/techniques/${drawnTech.id}/equip`, { token: monToken });
+  if (drawnTech.grade === '黄阶') {
+    ok(eq.success === true, '装备黄阶功法成功（练气可修）');
+  } else {
+    ok(eq.status === 403, `装备${drawnTech.grade}功法境界不足返回 403`, eq.message);
+  }
+  // 未拥有不可装备
+  const eqNotOwned = await call('POST', `/techniques/${techId}/equip`, { token: monToken });
+  ok(eqNotOwned.status === 400 && /尚未拥有/.test(eqNotOwned.message), '未拥有的功法不可装备');
+
+  // 30. 管理统计
   const stats = await call('GET', '/admin/stats', { token: adminToken });
   ok(stats.success === true && stats.data.userCount >= 2, '管理统计');
 
