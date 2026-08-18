@@ -972,3 +972,49 @@ body { padding-bottom: 64px; }
   box-shadow: 0 0 0 2px rgba(216, 176, 74, 0.45), 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 .ai-preview-box { margin-top: 10px; }
+
+/* ============================================================
+   十七、宗门 + 战场（第17轮）
+   ============================================================ */
+.sect-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
+.sect-card { display: flex; flex-direction: column; gap: 8px; }
+.sect-card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sect-name { font-family: var(--font-brush); font-size: 20px; letter-spacing: 3px; color: var(--ink); }
+.sect-meta { font-size: 12.5px; color: var(--ink-faint); }
+.sect-announcement { margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.45); border: 1px dashed var(--line-strong); border-radius: 6px; }
+.sect-member-list { max-height: 300px; overflow-y: auto; margin-top: 6px; }
+.sect-member-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed var(--line); flex-wrap: wrap; }
+.sect-member-row > span:first-child { flex: 1; min-width: 120px; }
+.sect-role-select { width: auto; padding: 2px 6px; font-size: 12px; }
+.my-sect-card { margin-bottom: 14px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+
+.war-list { display: flex; flex-direction: column; gap: 10px; }
+.war-item { display: block; }
+.war-item-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.war-vs { font-family: var(--font-brush); font-size: 17px; letter-spacing: 1px; color: var(--ink); }
+.war-vs-big { font-size: 21px; text-align: center; margin: 10px 0; }
+.war-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+.war-team-col { display: flex; flex-direction: column; gap: 6px; }
+.war-member { padding: 8px 10px; background: rgba(255,255,255,0.45); border: 1px solid var(--line); border-radius: 6px; }
+.war-member.a { border-left: 3px solid var(--cinnabar); }
+.war-member.b { border-left: 3px solid var(--jade-deep); }
+.war-member-pos { font-size: 11px; color: var(--ink-faint); font-family: var(--font-brush); }
+.war-member-name { font-weight: 600; font-size: 14px; }
+.war-member-name.muted { color: var(--ink-faint); font-weight: normal; }
+.war-member-stats { display: flex; gap: 10px; font-size: 12px; color: var(--ink-faint); }
+.war-battle-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); flex-wrap: wrap; }
+.war-battle-pos { font-family: var(--font-brush); font-size: 14px; min-width: 110px; }
+.war-hp-track { width: 100%; display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+.war-hp-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.war-hp-label { font-size: 12px; color: var(--ink-faint); width: 18px; }
+.war-hp-bar { flex: 1; height: 16px; background: rgba(0,0,0,0.12); border-radius: 8px; overflow: hidden; }
+.war-hp-inner { height: 100%; width: 100%; background: linear-gradient(90deg, #d8b04a, #c96a50); transition: width .3s; color: #fff; font-size: 11px; text-align: center; line-height: 16px; }
+.war-debate { margin-top: 14px; }
+.war-score { font-family: var(--font-brush); font-size: 22px; text-align: center; color: var(--cinnabar); margin: 10px 0; letter-spacing: 2px; }
+.war-question { padding: 8px 12px; background: rgba(255,255,255,0.5); border-radius: 6px; margin: 8px 0; }
+.war-vote-row { display: flex; gap: 10px; margin-top: 8px; }
+
+@media (max-width: 720px) {
+  .war-teams { grid-template-columns: 1fr; }
+  .sect-grid { grid-template-columns: 1fr; }
+}
