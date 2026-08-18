@@ -1,12 +1,15 @@
-// 听曲 · 搜索即播（纯前端；数据源：GDStudio 聚合 API，网易云源）
+// 听曲 · 搜索即播（纯前端逻辑；数据走本站后端代理 /api/music/*，规避第三方直连不稳定）
 // 若日后自建 NeteaseCloudMusicApi，把 NETEASE_API_BASE 改为自建地址即可
 // 自动切换为 /search?keywords= 与 /song/url?id= 接口格式
 (function () {
   'use strict';
 
   /* ---------------- API 适配层 ---------------- */
-  var GD = 'https://music-api.gdstudio.xyz/api.php';
-  var NETEASE_API_BASE = ''; // 例：'https://your-ncm.example.com'（留空则用下方聚合接口）
+  var NETEASE_API_BASE = ''; // 例：'https://your-ncm.example.com'（留空则用本站代理 /api/music/*）
+
+  function proxyJSON(path) {
+    return fetch(API_BASE_URL + path).then(function (r) { return r.json(); });
+  }
 
   var apiSearch = NETEASE_API_BASE
     ? function (kw) {
@@ -14,25 +17,15 @@
           .then(function (r) { return r.json(); })
           .then(function (d) {
             return (d.result && d.result.songs || []).map(function (s) {
-              return {
-                id: s.id,
-                name: s.name,
-                artist: (s.artists || []).map(function (a) { return a.name; }).join('/')
-              };
+              return { id: s.id, name: s.name, artist: (s.artists || []).map(function (a) { return a.name; }).join('/') };
             });
           });
       }
     : function (kw) {
-        return fetch(GD + '?types=search&source=netease&count=20&name=' + encodeURIComponent(kw))
-          .then(function (r) { return r.json(); })
-          .then(function (arr) {
-            return (arr || []).map(function (s) {
-              return {
-                id: s.id,
-                name: s.name,
-                artist: Array.isArray(s.artist) ? s.artist.join('/') : (s.artist || '')
-              };
-            });
+        return proxyJSON('/music/search?kw=' + encodeURIComponent(kw))
+          .then(function (d) {
+            if (!d.success) throw new Error(d.message);
+            return d.data.list;
           });
       };
 
@@ -42,17 +35,16 @@
           .then(function (d) { return (d.data && d.data[0] && d.data[0].url) || ''; });
       }
     : function (id) {
-        return fetch(GD + '?types=url&source=netease&id=' + id).then(function (r) { return r.json(); })
-          .then(function (d) { return d.url || ''; });
+        return proxyJSON('/music/url?id=' + id).then(function (d) { return (d.success && d.data.url) || ''; });
       };
 
   function apiPic(id) {
-    return fetch(GD + '?types=pic&source=netease&size=90&id=' + id).then(function (r) { return r.json(); })
-      .then(function (d) { return d.url || ''; }).catch(function () { return ''; });
+    return proxyJSON('/music/pic?id=' + id)
+      .then(function (d) { return (d.success && d.data.url) || ''; }).catch(function () { return ''; });
   }
   function apiLyric(id) {
-    return fetch(GD + '?types=lyric&source=netease&id=' + id).then(function (r) { return r.json(); })
-      .then(function (d) { return d.lyric || ''; }).catch(function () { return ''; });
+    return proxyJSON('/music/lyric?id=' + id)
+      .then(function (d) { return (d.success && d.data.lyric) || ''; }).catch(function () { return ''; });
   }
 
   /* ---------------- 换上听曲专属视频背景 ---------------- */
