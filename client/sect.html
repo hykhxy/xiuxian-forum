@@ -10,16 +10,29 @@
   <header id="site-nav"></header>
 
   <main class="container page">
-    <div class="page-head">
-      <div>
-        <div class="page-title">宗 门</div>
-        <div class="page-sub">立宗开派 · 广纳英才 · 逐鹿灵墟</div>
+    <!-- ===== 视图一：宗门列表 ===== -->
+    <div id="sect-list-view" class="view-fade">
+      <div class="page-head">
+        <div>
+          <div class="page-title">宗 门</div>
+          <div class="page-sub">立宗开派 · 广纳英才 · 逐鹿灵墟</div>
+        </div>
+        <button class="btn btn-primary" id="create-sect-btn">开山立派</button>
       </div>
-      <button class="btn btn-primary" id="create-sect-btn">开山立派</button>
+      <div id="my-sect-box"></div>
+      <div class="sect-grid" id="sect-list"></div>
     </div>
 
-    <div id="my-sect-box"></div>
-    <div class="sect-grid" id="sect-list"></div>
+    <!-- ===== 视图二：宗门内部详情（6 模块） ===== -->
+    <div id="sect-inner-view" class="view-fade" style="display:none">
+      <div class="page-head">
+        <button class="btn btn-sm" id="sect-back-btn">← 返回宗门列表</button>
+        <div class="page-title" id="inner-sect-name">宗门</div>
+        <div class="page-sub" id="inner-sect-meta"></div>
+      </div>
+      <div class="sect-tab-bar" id="sect-tab-bar"></div>
+      <div class="card" id="sect-tab-content"></div>
+    </div>
   </main>
 
   <script src="js/config.js"></script>
