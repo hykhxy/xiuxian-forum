@@ -35,7 +35,7 @@
       chip.appendChild(avatarHtml(post.author));
       chip.appendChild(el('span', null, post.author.username));
       meta.appendChild(chip);
-      meta.appendChild(realmBadge(post.author.realmLevel, post.author.realmName));
+      meta.appendChild(realmBadge(post.author.realm, post.author.realmName));
     }
     meta.appendChild(el('span', null, fmtDateTime(post.createdAt)));
     meta.appendChild(el('span', null, '👁 ' + post.viewCount));
@@ -140,7 +140,7 @@
       btn.disabled = false;
       if (!r.ok) return toast(r.message, 'error');
       ta.value = '';
-      if (r.data.expGained > 0) toast('修为 +' + r.data.expGained, 'exp');
+      if (r.data.qiGained > 0) toast('灵气 +' + r.data.qiGained, 'exp');
       loadComments();
     };
     editorEl.appendChild(ta);
@@ -161,7 +161,7 @@
       nameLink.href = 'profile.html?id=' + c.author.id;
       nameLink.style.color = 'var(--text)';
       head.appendChild(nameLink);
-      head.appendChild(realmBadge(c.author.realmLevel, c.author.realmName));
+      head.appendChild(realmBadge(c.author.realm, c.author.realmName));
     } else {
       head.appendChild(el('span', 'deleted-tip', '已注销'));
     }
