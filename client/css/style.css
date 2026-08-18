@@ -53,7 +53,15 @@ h1, h2, h3, .page-title, .brand-font { font-family: var(--font-brush); }
    ============================================================ */
 .ink-scene { position: fixed; inset: 0; z-index: -2; overflow: hidden; pointer-events: none; }
 
-/* 山景底图：固定不随页面滚动；缓慢"呼吸"传达林间风动 */
+/* 全屏视频背景：置于场景最底层；成功时覆盖静态山景，失败移除即降级 */
+.ink-video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  will-change: transform;                 /* GPU 合成层，不随滚动、不卡交互 */
+}
+
+/* 山景底图：视频失败时的降级层；缓慢"呼吸"传达林间风动 */
 .ink-mountain {
   position: absolute; inset: -3%;
   background: url("../assets/bg-mountain.jpg") center / cover no-repeat;
@@ -720,3 +728,100 @@ select option { background: var(--paper); color: var(--ink); }
   .stats-row { gap: 6px; }
   .stat-box { min-width: 72px; padding: 8px 10px; flex: 1; }
 }
+
+/* ============================================================
+   十二、登仙页（第7轮）：书法标题 + 闭关卡片
+   ============================================================ */
+.dx-hero { text-align: center; padding: 46px 0 26px; }
+.dx-title {
+  font-family: var(--font-brush);
+  font-size: 46px; letter-spacing: 14px; text-indent: 14px;
+  color: var(--ink); font-weight: 700;
+}
+.dx-sub { margin-top: 10px; font-family: var(--font-brush); font-size: 15px; letter-spacing: 5px; color: var(--ink-soft); }
+.dx-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.dx-card { will-change: transform; }
+.dx-card-title { font-family: var(--font-brush); font-size: 19px; letter-spacing: 6px; color: var(--ink); margin-bottom: 4px; }
+.dx-tips .dx-tip-item { padding: 9px 0; border-bottom: 1px dashed var(--line); font-size: 13px; color: var(--ink-soft); line-height: 1.8; }
+.dx-tips .dx-tip-item:last-child { border-bottom: none; }
+@media (max-width: 900px) { .dx-grid { grid-template-columns: 1fr; } .dx-title { font-size: 32px; letter-spacing: 8px; text-indent: 8px; } }
+
+/* ============================================================
+   十三、全局音乐播放器（第7轮）：底部宣纸栏 + 竖排歌词
+   ============================================================ */
+#dx-player {
+  position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%);
+  z-index: 150;                                 /* 低于导航(100)? 高于内容；不遮导航 */
+  width: min(960px, calc(100vw - 20px));
+  background: rgba(253, 251, 247, 0.9);
+  border: 1px solid var(--line-strong); border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(43, 43, 43, 0.16);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-body);
+  will-change: transform;
+}
+.dxp-main { display: flex; align-items: center; gap: 10px; padding: 8px 14px; }
+.dxp-cover { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid var(--line-strong); background: var(--paper-2); flex-shrink: 0; }
+.dxp-info { min-width: 0; width: 150px; margin-right: 4px; }
+.dxp-name { font-family: var(--font-brush); font-size: 14px; letter-spacing: 1px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dxp-artist { font-size: 11.5px; color: var(--ink-faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dxp-btn {
+  border: 1px solid var(--line-strong); background: rgba(255, 255, 255, 0.7);
+  color: var(--ink-soft); border-radius: 4px; width: 32px; height: 32px;
+  font-size: 13px; line-height: 1; flex-shrink: 0;
+  transition: transform .15s, color .15s, border-color .15s;
+}
+.dxp-btn:hover { color: var(--cinnabar); border-color: var(--cinnabar); transform: translateY(-1px); }
+.dxp-play { width: 38px; height: 38px; font-size: 15px; background: linear-gradient(180deg, #c96a50, var(--cinnabar)); color: #fdfbf7; border-color: #9a4632; }
+.dxp-play:hover { color: #fff; border-color: #9a4632; }
+.dxp-time { font-size: 11px; color: var(--ink-faint); font-family: var(--font-body); flex-shrink: 0; min-width: 34px; text-align: center; }
+
+/* 进度条 / 音量（水墨化 range） */
+.dxp-progress { flex: 1; min-width: 60px; height: 4px; -webkit-appearance: none; appearance: none; background: rgba(43,43,43,0.18); border-radius: 2px; outline: none; cursor: pointer; }
+.dxp-progress::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--cinnabar); border: 2px solid #fdfbf7; box-shadow: 0 1px 3px rgba(43,43,43,.4); }
+.dxp-progress::-moz-range-thumb { width: 10px; height: 10px; border-radius: 50%; background: var(--cinnabar); border: 2px solid #fdfbf7; }
+.dxp-volglyph { color: var(--ink-faint); font-size: 13px; flex-shrink: 0; }
+.dxp-vol { width: 64px; height: 4px; -webkit-appearance: none; appearance: none; background: rgba(43,43,43,0.18); border-radius: 2px; cursor: pointer; }
+.dxp-vol::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: var(--jade-deep); border: 2px solid #fdfbf7; }
+.dxp-vol::-moz-range-thumb { width: 9px; height: 9px; border-radius: 50%; background: var(--jade-deep); border: 2px solid #fdfbf7; }
+
+/* 添加歌曲输入行（默认收起） */
+.dxp-input { display: none; gap: 8px; padding: 0 14px 10px; }
+.dxp-input.show { display: flex; }
+.dxp-addinput { flex: 1; font-size: 12.5px; }
+
+/* 歌词面板：竖排楷体水墨 */
+.dxp-lyric {
+  display: none; position: absolute; bottom: calc(100% + 8px); right: 0;
+  width: 300px; height: 320px;
+  background: linear-gradient(180deg, rgba(253,251,247,0.97), rgba(253,251,247,0.92));
+  border: 1px solid var(--line-strong); border-radius: 8px;
+  box-shadow: var(--shadow-ink-hover);
+  overflow: hidden; padding: 16px 0;
+}
+.dxp-lyric.show { display: block; animation: lrcIn .3s ease; }
+@keyframes lrcIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.dxp-lrc-inner {
+  display: flex; flex-direction: row-reverse;   /* 竖排：自右向左 */
+  writing-mode: vertical-rl;
+  height: 100%; padding: 0 20px;
+  font-family: var(--font-brush); font-size: 16px; letter-spacing: 4px;
+  color: var(--ink-faint); line-height: 2;
+  transition: transform .5s ease; will-change: transform;  /* GPU 滚动 */
+}
+.dxp-lrc-inner p { margin: 0 6px 0 0; max-height: 100%; }
+.dxp-lrc-inner p.cur { color: var(--cinnabar); font-weight: 700; }
+
+/* 移动端迷你模式：仅封面 + 播放 + 歌词/展开 */
+@media (max-width: 720px) {
+  #dx-player { width: calc(100vw - 16px); bottom: 8px; }
+  .dxp-info, .dxp-time, .dxp-volglyph, .dxp-vol, .dxp-progress { display: none; }
+  .dxp-main { justify-content: center; gap: 14px; }
+  .dxp-cover { width: 34px; height: 34px; }
+  .dxp-lyric { width: min(300px, calc(100vw - 24px)); height: 260px; }
+}
+/* 播放器不遮核心内容：为 body 留出底部空间 */
+body { padding-bottom: 64px; }
+
+/* 帖子内嵌歌曲播放卡片 */
+.dx-song-card { margin: 4px 0; display: inline-flex; }
