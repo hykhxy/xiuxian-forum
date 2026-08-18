@@ -5,7 +5,7 @@ const checkInSchema = new mongoose.Schema(
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     date: { type: String, required: true }, // 'YYYY-MM-DD'，按东八区计算
     consecutiveDays: { type: Number, default: 1, min: 1 },
-    expGained: { type: Number, default: 0 },
+    qiGained: { type: Number, default: 0 },
     stonesGained: { type: Number, default: 0 }
   },
   { timestamps: true }
