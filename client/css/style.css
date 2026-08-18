@@ -849,51 +849,57 @@ select option { background: var(--paper); color: var(--ink); }
 .tq-item:hover .tq-item-play { opacity: 1; transform: translateX(0); }
 .tq-loading { justify-content: center; color: var(--ink-faint); font-family: var(--font-brush); letter-spacing: 3px; }
 
-/* 页面专属播放器（第10轮：深色黑底白字，适配红黑水墨背景） */
-#tq-player {
-  position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%);
-  z-index: 150; width: min(960px, calc(100vw - 20px));
-  background: rgba(0, 0, 0, 0.6);                    /* 半透明黑 */
-  border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 8px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(8px);
+/* ============================================================
+   十四·B、听曲页深色模式（第11轮：bg.webp 红黑水墨 + MetingJS fixed 吸底）
+   ============================================================ */
+body.tq-dark {
+  background: url('../assets/bg.webp') no-repeat center center fixed;
+  background-size: cover;
+  background-color: #101010;   /* 图未加载时的深色兜底 */
+}
+body.tq-dark .ink-scene { display: none; }                /* 本页弃用视频背景 */
+body.tq-dark::before {
+  background: rgba(0, 0, 0, 0.32);                        /* 深色遮罩替换宣纸白层，保白字可读 */
+}
+body.tq-dark .dx-title,
+body.tq-dark .dx-sub {
+  color: #f5efe4;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.65);
+}
+body.tq-dark .dx-title { border-bottom: none; }
+body.tq-dark .tq-input {
+  background: rgba(15, 15, 15, 0.9);                      /* 半透明深色 */
+  border-color: rgba(245, 239, 228, 0.35);
   color: #fff;
-  will-change: transform;
-  overflow: hidden;
 }
-.tq-mode-tip {
-  padding: 5px 14px 0; font-size: 11.5px; letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.62); font-family: var(--font-brush);
-}
-#tq-meting-box, #tq-iframe-box { padding: 6px 10px 10px; }
+body.tq-dark .tq-input::placeholder { color: rgba(245, 239, 228, 0.45); }
+body.tq-dark .tq-input:focus { border-color: #8B0000; box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.35); }
+/* 搜索结果卡保持宣纸白底（深背景上白卡，内容依旧可读） */
 
-/* APlayer 深色覆盖（融入黑底白字容器） */
-#tq-player .aplayer {
-  background: transparent; color: #fff;
-  box-shadow: none; font-family: var(--font-body);
-  border-radius: 6px;
+/* MetingJS fixed 吸底播放器深色覆盖（主题色 #8B0000 由组件属性控制） */
+#player-container .aplayer.aplayer-fixed .aplayer-body,
+#player-container .aplayer.aplayer-fixed {
+  background: rgba(15, 15, 15, 0.9);                      /* 半透明深色（用户规格） */
+  color: #fff;
 }
-#tq-player .aplayer .aplayer-info { border-color: rgba(255, 255, 255, 0.22); }
-#tq-player .aplayer .aplayer-info .aplayer-music .aplayer-title,
-#tq-player .aplayer .aplayer-info .aplayer-music .aplayer-author { color: #fff; }
-#tq-player .aplayer .aplayer-lrc:before { background: linear-gradient(180deg, rgba(0,0,0,0.9), transparent); }
-#tq-player .aplayer .aplayer-lrc:after { background: linear-gradient(0deg, rgba(0,0,0,0.9), transparent); }
-#tq-player .aplayer .aplayer-lrc p { color: rgba(255, 255, 255, 0.55); text-shadow: 0 0 4px rgba(0,0,0,.8); }
-#tq-player .aplayer .aplayer-lrc p.aplayer-lrc-current { color: #fff; }
-#tq-player .aplayer .aplayer-pic { border-radius: 6px 0 0 6px; }
-#tq-player .aplayer .aplayer-list ol li { border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.75); background: rgba(0,0,0,0.55); }
-#tq-player .aplayer .aplayer-list ol li.aplayer-list-light { background: rgba(179, 84, 62, 0.25); }
-#tq-player .aplayer .aplayer-list ol li .aplayer-list-title,
-#tq-player .aplayer .aplayer-list ol li .aplayer-list-author { color: rgba(255,255,255,0.85); }
-#tq-player .aplayer .aplayer-list ol li .aplayer-list-index { color: rgba(255,255,255,0.5); }
-
-/* 官方外链 iframe 区（方案B） */
-#tq-iframe-box iframe { display: block; border-radius: 6px; background: #fff; }
+#player-container .aplayer .aplayer-info .aplayer-music .aplayer-title,
+#player-container .aplayer .aplayer-info .aplayer-music .aplayer-author { color: #fff; }
+#player-container .aplayer .aplayer-info .aplayer-controller .aplayer-time,
+#player-container .aplayer .aplayer-icon path { color: #fff; fill: #fff; }
+#player-container .aplayer .aplayer-list ol li { color: rgba(255,255,255,0.72); border-color: rgba(255,255,255,0.12); background: rgba(15,15,15,0.94); }
+#player-container .aplayer .aplayer-list ol li.aplayer-list-light { background: rgba(139, 0, 0, 0.32); }
+#player-container .aplayer .aplayer-list ol li .aplayer-list-title,
+#player-container .aplayer .aplayer-list ol li .aplayer-list-author { color: rgba(255,255,255,0.85); }
+#player-container .aplayer .aplayer-lrc p { color: rgba(255,255,255,0.55); text-shadow: 0 0 4px rgba(0,0,0,.8); }
+#player-container .aplayer .aplayer-lrc p.aplayer-lrc-current { color: #fff; }
+#player-container .aplayer .aplayer-lrc:before { background: linear-gradient(180deg, rgba(15,15,15,.9), transparent); }
+#player-container .aplayer .aplayer-lrc:after { background: linear-gradient(0deg, rgba(15,15,15,.9), transparent); }
+/* fixed 模式抽屉默认在右下角；底栏留白防遮内容（fixed 模式收起时仅占右下角） */
+body.tq-dark { padding-bottom: 76px; }
 
 @media (max-width: 720px) {
   .tq-search-wrap { flex-direction: column; }
   .tq-results { max-width: none; }
-  #tq-player { width: calc(100vw - 16px); bottom: 8px; }
 }
 /* 播放器不遮核心内容：为 body 留出底部空间 */
 body { padding-bottom: 64px; }
