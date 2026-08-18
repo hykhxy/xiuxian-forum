@@ -1,7 +1,8 @@
 // 职业系统：注册时选择，终身不可更改
-// 效果中目前实际接入玩法的：法修 expGainBonusRate（作用于所有修为获取，见 utils/reward.js grantExp）
-// 其余数值（攻击/气血/挂机/突破/抽取）由 getDerivedStats 统一计算，供用户信息接口返回，
-// 待挂机、突破、功法抽取等系统实现时直接消费。
+// 已接入玩法：法修/魔修 灵气获取倍率（reward.grantQi 与挂机产出）、鬼修 挂机速度、
+// 血修 突破成功率、魔修 突破失败惩罚（见 utils/cultivation.js）。
+// 其余数值（攻击/气血/抽取）由 getDerivedStats 统一计算，供用户信息接口返回，
+// 待战斗、功法抽取等系统实现时直接消费。
 const PROFESSIONS = {
   sword: {
     key: 'sword',
@@ -60,8 +61,8 @@ const PROFESSION_KEYS = Object.keys(PROFESSIONS);
 const BASE_STATS = {
   attack: 100,            // 攻击力
   maxHp: 1000,            // 气血上限
-  idleSpeed: 100,         // 挂机速度（每小时收益基准）
-  breakthroughBaseRate: 0.5,   // 突破基准成功率
+  idleSpeed: 100,         // 挂机速度基准（实际速度 = 境界速率 × getIdleRate）
+  breakthroughBaseRate: 0.5,   // （历史字段）血修突破加成由此差值推算
   techniqueDrawBaseRate: 0.05  // 功法抽取基准概率
 };
 
@@ -69,12 +70,21 @@ function getProfession(key) {
   return PROFESSIONS[key] || null;
 }
 
-// 职业对修为/灵气获取的倍率（法修 1.2、魔修 1.1、其余 1）
+// 职业对灵气获取的倍率（法修 1.2、魔修 1.1、其余 1）
+// 作用于发帖/评论/签到/投稿奖励与挂机产出
 function getExpGainRate(professionKey) {
   const p = getProfession(professionKey);
   if (!p) return 1;
   const e = p.effects;
   return 1 + (e.expGainBonusRate || 0) + (e.allStatsBonusRate || 0);
+}
+
+// 挂机速度倍率 = 灵气获取倍率 × (1 + 挂机速度加成)
+// 鬼修 1.15、法修 1.2、魔修 1.1（全属性已在灵气倍率中计入，不重复叠加）
+function getIdleRate(professionKey) {
+  const p = getProfession(professionKey);
+  const idleBonus = p ? (p.effects.idleSpeedBonusRate || 0) : 0;
+  return +(getExpGainRate(professionKey) * (1 + idleBonus)).toFixed(4);
 }
 
 // 综合基础属性 + 职业加成，得出面板属性
@@ -86,7 +96,7 @@ function getDerivedStats(professionKey) {
   return {
     attack: Math.round(BASE_STATS.attack * (1 + (e.attackBonusRate || 0) + all)),
     maxHp: Math.round(BASE_STATS.maxHp * (1 + (e.hpBonusRate || 0) + all)),
-    idleSpeed: Math.round(BASE_STATS.idleSpeed * (1 + (e.idleSpeedBonusRate || 0) + all)),
+    idleSpeed: Math.round(BASE_STATS.idleSpeed * getIdleRate(professionKey)),
     breakthroughRate: +(BASE_STATS.breakthroughBaseRate + (e.breakthroughSuccessBonus || 0)).toFixed(2),
     techniqueDrawRate: +(BASE_STATS.techniqueDrawBaseRate + (e.techniqueDrawBonusRate || 0)).toFixed(2),
     expGainRate: +getExpGainRate(professionKey).toFixed(2),
@@ -107,6 +117,7 @@ module.exports = {
   BASE_STATS,
   getProfession,
   getExpGainRate,
+  getIdleRate,
   getDerivedStats,
   toProfessionInfo
 };
