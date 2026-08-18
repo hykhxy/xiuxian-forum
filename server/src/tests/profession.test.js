@@ -5,6 +5,7 @@ const {
   PROFESSION_KEYS,
   getProfession,
   getExpGainRate,
+  getIdleRate,
   getDerivedStats,
   toProfessionInfo
 } = require('../utils/profession');
@@ -41,6 +42,26 @@ test('法修：灵气获取+20%', () => {
 
 test('鬼修：挂机速度+15%', () => {
   assert.strictEqual(getDerivedStats('ghost').idleSpeed, 115);
+  assert.strictEqual(getIdleRate('ghost'), 1.15);
+});
+
+test('法修：灵气获取+20%（含挂机产出）', () => {
+  assert.strictEqual(getExpGainRate('mage'), 1.2);
+  assert.strictEqual(getIdleRate('mage'), 1.2);
+  const s = getDerivedStats('mage');
+  assert.strictEqual(s.expGainRate, 1.2);
+  assert.strictEqual(s.idleSpeed, 120); // 挂机面板速度也吃灵气加成
+  assert.strictEqual(s.attack, 100);
+});
+
+test('魔修：挂机倍率不双叠（1.1 而非 1.21）', () => {
+  assert.strictEqual(getIdleRate('demon'), 1.1);
+});
+
+test('无职业：挂机倍率为 1', () => {
+  assert.strictEqual(getIdleRate(undefined), 1);
+  assert.strictEqual(getIdleRate('sword'), 1);
+  assert.strictEqual(getIdleRate('body'), 1);
 });
 
 test('血修：突破成功率+10%（基准0.5→0.6）', () => {
