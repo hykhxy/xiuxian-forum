@@ -2,7 +2,7 @@ const Comment = require('../models/Comment');
 const Post = require('../models/Post');
 const User = require('../models/User');
 const { toCommentItem, toAuthorSummary } = require('../utils/serialize');
-const { REWARDS, grantExp } = require('../utils/reward');
+const { REWARDS, grantQi } = require('../utils/reward');
 
 // GET /api/posts/:id/comments 全量返回（前端组楼中楼树；小规模论坛足够）
 async function listComments(req, res) {
@@ -19,7 +19,7 @@ async function listComments(req, res) {
   res.json({ success: true, data: { list: comments.map(toCommentItem), total: post.commentCount } });
 }
 
-// POST /api/posts/:id/comments 评论（修为+3 含功法加成；parentCommentId 支持楼中楼）
+// POST /api/posts/:id/comments 评论（灵气+3 含加成；parentCommentId 支持楼中楼）
 async function createComment(req, res) {
   const { content, parentCommentId, replyToUserId } = req.body || {};
   const post = await Post.findById(req.params.id);
@@ -61,7 +61,7 @@ async function createComment(req, res) {
   post.commentCount += 1;
   await post.save();
 
-  const expGained = grantExp(req.user, REWARDS.commentExp);
+  const qiGained = grantQi(req.user, REWARDS.commentQi);
   req.user.commentCount += 1;
   await req.user.save();
 
@@ -77,7 +77,7 @@ async function createComment(req, res) {
         replyToUser: replyTo ? { id: replyTo._id, username: replyTo.username } : null,
         createdAt: comment.createdAt
       },
-      expGained
+      qiGained
     }
   });
 }
