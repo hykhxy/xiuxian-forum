@@ -256,11 +256,34 @@ function renderRichText(container, text) {
 function openTrueSelf() {
   document.querySelector('.zw-mask')?.remove();
   const mask = el('div', 'zw-mask');
-  const card = el('div', 'zw-card rune-texture sheen');
+  const card = el('div', 'zw-card sheen');
+
+  // ---- 第19轮：性别动态背景图（male→图1 / female→图2），localStorage 持久化 ----
+  const ZW_BG = { male: 'assets/img/zw-bg-male.jpg', female: 'assets/img/zw-bg-female.jpg' };
+  const genderBtn = el('button', 'zw-gender-toggle', '');
+  const bgLayer = el('div', 'zw-bg');
+  const shade = el('div', 'zw-shade');          // 遮罩：图之上、内容之下
+  function applyGender(g) {
+    bgLayer.style.backgroundImage = `url("${ZW_BG[g]}")`;
+    genderBtn.textContent = g === 'male' ? '♂' : '♀';
+    genderBtn.title = g === 'male' ? '当前：乾造（点击切换坤造）' : '当前：坤造（点击切换乾造）';
+  }
+  let userGender = localStorage.getItem('user_gender');
+  if (userGender !== 'male' && userGender !== 'female') userGender = 'male'; // 默认男
+  applyGender(userGender);
+  genderBtn.onclick = () => {
+    userGender = userGender === 'male' ? 'female' : 'male';
+    localStorage.setItem('user_gender', userGender);
+    applyGender(userGender);
+    toast(userGender === 'male' ? '已切换：乾造（男）背景' : '已切换：坤造（女）背景', 'info');
+  };
+  card.appendChild(bgLayer);
+  card.appendChild(shade);
 
   // 头部
   const head = el('div', 'zw-head');
   head.appendChild(el('div', 'zw-title', '真 我'));
+  head.appendChild(genderBtn);
   const close = el('span', 'zw-close', '✕');
   close.onclick = () => mask.remove();
   head.appendChild(close);
