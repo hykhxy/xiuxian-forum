@@ -45,7 +45,8 @@ app.use(cors());
 app.use(express.json({ limit: '200kb' }));
 if (process.env.NODE_ENV !== 'production') app.use(morgan('tiny'));
 
-// 登录/注册接口限流：每 IP 每 15 分钟 20 次
+// 凭证类接口限流：每 IP 每 15 分钟 20 次（仅限可被爆破的端点；
+// /auth/me 持有效 JWT 轮询，不在限流面内）
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
@@ -53,7 +54,9 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { success: false, message: '施法过于频繁，请稍后再试' }
 });
-app.use('/api/auth', authLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/send-code', authLimiter);
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, data: { ok: true } });
