@@ -21,7 +21,24 @@
     headEl.innerHTML = '';
 
     const head = el('div', 'profile-head');
-    head.appendChild(avatarHtml(profileUser, ''));
+    if (isSelf) {
+      // 圆形头像 + hover 浮层（上传 / AI 生成）
+      const wrap = el('div', 'avatar-wrap');
+      wrap.id = 'avatar-wrap';
+      wrap.appendChild(avatarHtml(profileUser, 'avatar-main'));
+      const overlay = el('div', 'avatar-overlay');
+      const upBtn = el('button', 'avatar-act', '上 传');
+      upBtn.onclick = (e) => { e.stopPropagation(); fileInput.click(); };
+      const aiBtn = el('button', 'avatar-act', 'AI 生成');
+      aiBtn.onclick = (e) => { e.stopPropagation(); openAiModal(); };
+      overlay.appendChild(upBtn);
+      overlay.appendChild(el('div', 'avatar-act-divider'));
+      overlay.appendChild(aiBtn);
+      wrap.appendChild(overlay);
+      head.appendChild(wrap);
+    } else {
+      head.appendChild(avatarHtml(profileUser, ''));
+    }
 
     const info = el('div', 'profile-info');
     const nameRow = el('div', 'profile-name');
@@ -280,6 +297,108 @@
     mask.onclick = (e) => { if (e.target === mask) mask.remove(); };
     document.body.appendChild(mask);
     return mask;
+  }
+
+  // ---------- 头像：本地上传（FileReader 预览 + 确认提交） ----------
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'image/jpeg,image/png';
+  fileInput.style.display = 'none';
+  document.body.appendChild(fileInput);
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    fileInput.value = ''; // 允许重复选择同一文件
+    if (!file) return;
+    if (!['image/jpeg', 'image/png'].includes(file.type)) return toast('仅支持 JPG / PNG 格式', 'error');
+    if (file.size > 2 * 1024 * 1024) return toast('图片不能超过 2MB', 'error');
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      // 预览 + 确认弹窗
+      const box = el('div');
+      const img = el('img', 'avatar-preview');
+      img.src = reader.result;
+      box.appendChild(img);
+      box.appendChild(el('div', 'form-hint', file.name + '（' + (file.size / 1024).toFixed(0) + ' KB）'));
+      const actions = el('div', 'modal-actions');
+      const okBtn = el('button', 'btn btn-primary', '就以此像');
+      okBtn.onclick = async () => {
+        const fd = new FormData();
+        fd.append('file', file);
+        okBtn.disabled = true; okBtn.textContent = '上传中……';
+        const r = await api.postForm('/users/me/avatar/upload', fd);
+        okBtn.disabled = false; okBtn.textContent = '就以此像';
+        if (!r.ok) return toast(r.message, 'error');
+        Auth.updateUser(r.data.user);
+        toast('头像已更新', 'success');
+        mask.remove();
+        load();
+      };
+      const cancel = el('button', 'btn', '再想想');
+      cancel.onclick = () => mask.remove();
+      actions.appendChild(okBtn);
+      actions.appendChild(cancel);
+      box.appendChild(actions);
+      const mask = modal('仙 像', box);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ---------- 头像：AI 生成（描述 → 生成预览 → 确认保存） ----------
+  function openAiModal() {
+    const box = el('div');
+    const input = el('input');
+    input.type = 'text';
+    input.maxLength = 200;
+    input.placeholder = '例如：水墨风剑修，红衣持剑，凌厉眼神';
+    box.appendChild(input);
+
+    const row = el('div', 'modal-actions');
+    row.style.justifyContent = 'flex-start';
+    const genBtn = el('button', 'btn btn-jade', '绘 制 仙 像');
+    row.appendChild(genBtn);
+    box.appendChild(row);
+
+    const previewBox = el('div', 'ai-preview-box');
+    previewBox.style.display = 'none';
+    const img = el('img', 'avatar-preview');
+    const tip = el('div', 'form-hint', '');
+    const row2 = el('div', 'modal-actions');
+    const okBtn = el('button', 'btn btn-primary', '就以此像');
+    okBtn.onclick = async () => {
+      okBtn.disabled = true;
+      const r = await api.post('/users/me/avatar/ai-confirm');
+      okBtn.disabled = false;
+      if (!r.ok) return toast(r.message, 'error');
+      Auth.updateUser(r.data.user);
+      toast('仙像已定为头像', 'success');
+      mask.remove();
+      load();
+    };
+    const regen = el('button', 'btn', '重新绘制');
+    regen.onclick = () => { previewBox.style.display = 'none'; genBtn.disabled = false; };
+    row2.appendChild(okBtn);
+    row2.appendChild(regen);
+    previewBox.appendChild(img);
+    previewBox.appendChild(tip);
+    previewBox.appendChild(row2);
+    box.appendChild(previewBox);
+
+    genBtn.onclick = async () => {
+      const prompt = input.value.trim();
+      if (!prompt) return toast('请先描述你的仙像', 'error');
+      genBtn.disabled = true; genBtn.textContent = '绘制中……（约数十秒）';
+      const r = await api.post('/users/me/avatar/ai-generate', { prompt });
+      genBtn.disabled = false; genBtn.textContent = '绘 制 仙 像';
+      if (!r.ok) return toast(r.message, 'error');
+      previewBox.style.display = '';
+      img.src = r.data.previewUrl;
+      tip.textContent = '满意则「就以此像」，不满意可重新绘制';
+    };
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') genBtn.click(); });
+
+    const mask = modal('AI 仙 像', box);
   }
 
   function openEditModal() {
