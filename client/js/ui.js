@@ -77,7 +77,9 @@ function renderNav(active) {
     { key: 'techniques', href: 'techniques.html', label: '藏经阁' },
     { key: 'post-edit', href: 'post-edit.html', label: '执笔' },
     { key: 'dengxian', href: 'dengxian.html', label: '登仙' },
-    { key: 'tingqu', href: 'tingqu.html', label: '听曲' }
+    { key: 'tingqu', href: 'tingqu.html', label: '听曲' },
+    { key: 'sect', href: 'sect.html', label: '宗门' },
+    { key: 'battlefield', href: 'battlefield.html', label: '战场' }
   ];
   links.forEach((l) => {
     const a = el('a', 'nav-link' + (active === l.key ? ' active' : ''), l.label);
