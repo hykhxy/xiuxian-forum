@@ -20,7 +20,27 @@ const app = express();
 // Render 等平台使用反向代理，信任一层代理以获取真实 IP（限流依赖）
 app.set('trust proxy', 1);
 
-app.use(helmet());
+// CSP：允许 MetingJS/APlayer 所需的外部资源（CDN 脚本样式、injahow 元数据接口、
+// 网易云音频直链/封面/外链 iframe）。helmet 默认策略过严会拦截这些，故显式覆盖。
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: false,
+    directives: {
+      'default-src': ["'self'"],
+      'base-uri': ["'self'"],
+      'object-src': ["'none'"],
+      'frame-ancestors': ["'self'"],
+      'form-action': ["'self'"],
+      'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://unpkg.com', 'https://api.injahow.cn'],
+      'style-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://unpkg.com'],
+      'img-src': ["'self'", 'data:', 'https:'],
+      'media-src': ["'self'", 'https:', 'blob:'],
+      'connect-src': ["'self'", 'https://api.injahow.cn', 'https://cdn.jsdelivr.net', 'https://unpkg.com', 'https://music.163.com'],
+      'font-src': ["'self'", 'data:', 'https:'],
+      'frame-src': ["'self'", 'https://music.163.com']
+    }
+  }
+}));
 app.use(cors());
 app.use(express.json({ limit: '200kb' }));
 if (process.env.NODE_ENV !== 'production') app.use(morgan('tiny'));
