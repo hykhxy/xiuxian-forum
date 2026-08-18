@@ -77,6 +77,63 @@
     }
     head.appendChild(actionWrap);
 
+    // ---- 修炼层数（第16轮）：层数进度 + 升层按钮 + 下层预览 ----
+    if (t.maxLevel && t.baseStats && t.baseStats.atk > 0) {
+      const lvBox = el('div', null);
+      lvBox.style.cssText = 'margin-top:14px;padding-top:12px;border-top:1px dashed var(--line-strong)';
+
+      const myEntry = r.data.myEntry || null;   // 后端返回（已修炼时）
+      const level = myEntry ? myEntry.level : 0;
+
+      // 层数进度条
+      const pw = el('div', 'progress-wrap');
+      const pct = Math.round((level / t.maxLevel) * 100);
+      const bar = el('div', 'progress-bar');
+      const inner = el('div', 'progress-inner');
+      inner.style.width = pct + '%';
+      bar.appendChild(inner);
+      pw.appendChild(bar);
+      const pt = el('div', 'progress-text');
+      pt.appendChild(el('span', null, '修炼层数 ' + (level || '—') + ' / ' + t.maxLevel));
+      pt.appendChild(el('span', null, level >= t.maxLevel ? '圆满' : '第1层攻+' + t.baseStats.atk + ' 血+' + t.baseStats.hp));
+      pw.appendChild(pt);
+      lvBox.appendChild(pw);
+
+      // 每层成长表（基础 → 满层）
+      const growthRow = el('div', 'form-hint',
+        '每层成长：攻/防/血/灵气/修炼基础 × ' + Math.round((1 + t.growthRate) * 100) + '%/层（' +
+        '满层攻+' + Math.round(t.baseStats.atk * Math.pow(1 + t.growthRate, t.maxLevel - 1)) + '）');
+      lvBox.appendChild(growthRow);
+
+      // 升层按钮（已修炼且未满层时）
+      if (myEntry && level < t.maxLevel && myEntry.nextPreview) {
+        const row = el('div', null);
+        row.style.cssText = 'display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap';
+        const np = myEntry.nextPreview;
+        const lvBtn = el('button', 'btn btn-primary btn-sm',
+          '参悟上卷 · 升至第 ' + np.level + ' 层（' + np.cost + ' 灵气）');
+        const qi = Auth.user() ? (r.data.myQi || 0) : 0;
+        if (qi < np.cost) lvBtn.disabled = true;
+        lvBtn.onclick = async () => {
+          lvBtn.disabled = true;
+          const res = await api.post(`/techniques/${techId}/levelup`);
+          lvBtn.disabled = false;
+          if (!res.ok) return toast(res.message, 'error');
+          const g = res.data.gained;
+          toast('参悟成功！第 ' + res.data.level + ' 层：攻+' + g.atk + ' 防+' + g.def + ' 血+' + g.hp, 'exp');
+          load();
+        };
+        row.appendChild(lvBtn);
+        const g = np.gained;
+        row.appendChild(el('span', 'form-hint', '下层收益：攻+' + g.atk + ' 防+' + g.def + ' 血+' + g.hp + ' 灵气+' + g.qi));
+        lvBox.appendChild(row);
+      } else if (myEntry && level >= t.maxLevel) {
+        lvBox.appendChild(el('div', 'form-hint', '此法已修至圆满之境'));
+      }
+
+      head.appendChild(lvBox);
+    }
+
     // ---- 正文 ----
     const desc = el('div', 'tech-detail-desc', t.description);
     const effect = el('div', null);
