@@ -1018,3 +1018,112 @@ body { padding-bottom: 64px; }
   .war-teams { grid-template-columns: 1fr; }
   .sect-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   十八、宗门内部页 + 真我人物卡（第18轮）
+   ============================================================ */
+/* 视图切换：0.5s 淡入淡出 */
+.view-fade { transition: opacity .5s ease; }
+.view-fade.fading { opacity: 0; }
+
+/* 宗门内部 Tab */
+.sect-tab-bar { display: flex; gap: 2px; border-bottom: 1px solid var(--line-strong); margin-bottom: 14px; overflow-x: auto; }
+.sect-tab { padding: 9px 16px; font-family: var(--font-brush); font-size: 15px; letter-spacing: 2px; color: var(--ink-soft); border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
+.sect-tab.active { color: var(--cinnabar); border-bottom-color: var(--cinnabar); }
+
+/* 签到·贡献 */
+.checkin-contribution { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.contribution-balance { margin-left: auto; text-align: center; background: rgba(255,255,255,0.55); border: 1px solid var(--line); border-radius: 8px; padding: 12px 22px; }
+.contribution-balance .stat-num { font-size: 26px; color: var(--cinnabar); font-family: var(--font-brush); }
+
+/* 任务堂 */
+.task-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px dashed var(--line); }
+.task-row:last-child { border-bottom: none; }
+.task-info { flex: 1; min-width: 0; }
+.task-name { font-family: var(--font-brush); font-size: 16px; font-weight: 600; }
+
+/* 风云榜 */
+.rank-table .rank-num { font-family: var(--font-brush); color: var(--cinnabar); font-size: 16px; }
+
+/* 人员分组 */
+.member-section { margin-bottom: 12px; }
+.member-section-title { font-family: var(--font-brush); font-size: 15px; color: var(--cinnabar); letter-spacing: 2px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+
+/* ---------- 真我 RPG 人物卡 ---------- */
+.zw-mask {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  animation: lrcIn .25s ease;
+}
+.zw-card {
+  position: relative; overflow: hidden;
+  width: 560px; max-width: 96vw;
+  background: rgba(18, 9, 9, 0.72);                    /* 深色半透明磨砂 */
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  border: 1px solid rgba(216, 176, 74, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 0 40px rgba(216, 176, 74, 0.14), 0 24px 60px rgba(0, 0, 0, 0.6);
+  padding: 22px 26px 26px;
+}
+.zw-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.zw-title { font-family: var(--font-brush); font-size: 26px; letter-spacing: 12px; color: #e8cf9a; text-shadow: 0 0 16px rgba(216, 176, 74, 0.5); }
+.zw-close { cursor: pointer; color: rgba(243, 233, 220, 0.55); font-size: 16px; padding: 4px 8px; }
+.zw-close:hover { color: #fff; }
+
+.zw-body { display: flex; gap: 24px; align-items: stretch; }
+
+/* 左：打坐剪影 */
+.zw-figure-wrap {
+  position: relative; width: 170px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+}
+.zw-halo {
+  position: relative; z-index: 1;
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(216, 176, 74, 0.22), rgba(139, 0, 0, 0.10) 62%, transparent 75%);
+  border: 1px solid rgba(216, 176, 74, 0.4);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 26px rgba(216, 176, 74, 0.28), inset 0 0 30px rgba(216, 176, 74, 0.12);
+  animation: zwBreath 4.5s ease-in-out infinite;
+}
+@keyframes zwBreath {
+  0%, 100% { box-shadow: 0 0 22px rgba(216, 176, 74, 0.22), inset 0 0 26px rgba(216, 176, 74, 0.10); }
+  50%      { box-shadow: 0 0 38px rgba(216, 176, 74, 0.42), inset 0 0 38px rgba(216, 176, 74, 0.2); }
+}
+.zw-figure { font-size: 64px; line-height: 1; filter: drop-shadow(0 0 12px rgba(216, 176, 74, 0.55)); }
+.zw-ripple {
+  position: absolute; top: 50%; left: 50%;
+  width: 130px; height: 40px; border-radius: 50%;
+  border: 1px solid rgba(216, 176, 74, 0.4);
+  transform: translate(-50%, -20px) scaleX(1);
+  animation: zwRipple 3.2s ease-out infinite;
+}
+.zw-ripple-2 { animation-delay: 1.6s; }
+@keyframes zwRipple {
+  0%   { transform: translate(-50%, -20px) scaleX(0.4); opacity: 0.9; }
+  100% { transform: translate(-50%, -20px) scaleX(1.7); opacity: 0; }
+}
+.zw-figure-caption { margin-top: 10px; font-family: var(--font-brush); font-size: 13px; letter-spacing: 4px; color: rgba(243, 233, 220, 0.55); }
+
+/* 右：两列属性 */
+.zw-stats { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; align-content: start; min-width: 0; }
+.zw-loading, .zw-login-tip { grid-column: 1 / -1; text-align: center; color: rgba(243, 233, 220, 0.55); padding: 30px 0; font-family: var(--font-brush); letter-spacing: 3px; }
+.zw-login-tip a { color: #e8cf9a; }
+.zw-name { grid-column: 1 / -1; font-family: var(--font-brush); font-size: 21px; letter-spacing: 4px; color: #f3e9dc; border-bottom: 1px solid rgba(216, 176, 74, 0.3); padding-bottom: 6px; margin-bottom: 4px; }
+.zw-sub { font-family: var(--font-brush); font-size: 12px; letter-spacing: 3px; color: rgba(216, 176, 74, 0.75); margin-top: 4px; }
+.zw-kv { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px dashed rgba(243, 233, 220, 0.12); }
+.zw-kv-label { font-family: var(--font-brush); font-size: 13px; letter-spacing: 2px; color: rgba(243, 233, 220, 0.55); flex-shrink: 0; }
+.zw-kv-value { font-size: 15px; color: #f3e9dc; font-weight: 600; text-align: right; }
+.zw-tech-row { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; padding-top: 10px; border-top: 1px dashed rgba(216, 176, 74, 0.3); }
+
+/* 导航「真我」按钮微光 */
+.nav-btn-zhenwo { color: #e8cf9a !important; text-shadow: 0 0 8px rgba(216, 176, 74, 0.45); }
+
+@media (max-width: 680px) {
+  .zw-body { flex-direction: column; align-items: center; }
+  .zw-figure-wrap { width: 100%; }
+  .zw-stats { width: 100%; }
+}
