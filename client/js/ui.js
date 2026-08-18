@@ -231,3 +231,29 @@ function loadingState(container, text) {
   container.innerHTML = '';
   container.appendChild(el('div', 'empty loading', text || '灵气凝聚中……'));
 }
+
+// ---------- 富文本渲染（防 XSS）：普通文本 textContent；音乐平台歌曲链接 → 播放卡片 ----------
+var MUSIC_LINK_RE = /(https?:\/\/(?:music\.163\.com\/song\?.*?id=(\d+)|y\.qq\.com\/\S*?songDetail\/(\w+)|www\.kugou\.com\/\S*?hash=(\w+)|kuwo\.cn\/play_detail\/(\d+))\S*)/i;
+
+function renderRichText(container, text) {
+  container.innerHTML = '';
+  var rest = String(text || '');
+  var m;
+  while ((m = rest.match(MUSIC_LINK_RE))) {
+    if (m.index > 0) container.appendChild(document.createTextNode(rest.slice(0, m.index)));
+    var source = m[2] ? 'netease' : (m[3] ? 'qq' : (m[4] ? 'kugou' : 'kuwo'));
+    var songId = m[2] || m[3] || m[4] || m[5];
+    var card = el('button', 'btn btn-sm btn-jade dx-song-card', '▶ ' + (source === 'netease' ? '网易云' : source === 'qq' ? 'QQ音乐' : source === 'kugou' ? '酷狗' : '酷我') + ' · 点击播放');
+    card.type = 'button';
+    card.dataset.source = source;
+    card.dataset.songId = songId;
+    card.onclick = function () {
+      if (window.DXPlayer) window.DXPlayer.playSong(this.dataset.source, this.dataset.songId);
+      else toast('仙音组件尚未就绪', 'error');
+    };
+    container.appendChild(card);
+    container.appendChild(document.createElement('br'));
+    rest = rest.slice(m.index + m[1].length);
+  }
+  if (rest) container.appendChild(document.createTextNode(rest));
+}
