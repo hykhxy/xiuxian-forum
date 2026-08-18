@@ -142,6 +142,7 @@
     info.appendChild(gradeBadge(t.grade));
     info.appendChild(el('span', 'tag', t.type));
     info.appendChild(el('span', 'tag', t.element + '属性'));
+    if (t.maxLevel) info.appendChild(el('span', 'tag', t.maxLevel + ' 层'));
 
     const name = el('div', 'tech-card-name', t.name);
     const desc = el('div', 'tech-card-desc', t.description);
