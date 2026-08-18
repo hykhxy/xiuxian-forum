@@ -185,6 +185,10 @@ select option { background: var(--bg-soft); }
 .mark-top { color: var(--danger); background: var(--danger-soft); border: 1px solid rgba(192, 91, 71, 0.35); }
 .mark-essence { color: var(--accent); background: var(--accent-soft); border: 1px solid rgba(201, 164, 78, 0.35); }
 
+/* ---------- 抽卡 ---------- */
+.draw-card { margin-bottom: 16px; padding: 16px 18px; }
+.draw-result { max-width: 380px; }
+
 /* ---------- 帖子详情 ---------- */
 .post-detail-title { font-size: 24px; font-weight: 700; line-height: 1.5; margin: 8px 0; }
 .post-detail-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 13px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
