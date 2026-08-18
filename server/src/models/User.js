@@ -13,6 +13,16 @@ const userSchema = new mongoose.Schema(
       maxlength: [16, '用户名最多16个字符']
     },
     password: { type: String, required: true, select: false },
+    // 注册邮箱（第14轮：验证码注册；老用户无此字段不受影响，sparse 唯一索引）
+    email: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      validate: {
+        validator: (v) => !v || /^\S+@\S+\.\S+$/.test(v),
+        message: '邮箱格式不正确'
+      }
+    },
     // 职业：注册时必选，此后无任何修改入口（终身制）
     profession: {
       type: String,
@@ -51,6 +61,9 @@ const userSchema = new mongoose.Schema(
 userSchema.virtual('realmName').get(function () {
   return getRealmByLevel(this.realm).name;
 });
+
+// email 稀疏唯一索引：老用户字段缺失不受影响，新注册邮箱不可重复
+userSchema.index({ email: 1 }, { unique: true, sparse: true });
 
 userSchema.methods.toJSON = function () {
   const obj = this.toObject({ virtuals: true });
