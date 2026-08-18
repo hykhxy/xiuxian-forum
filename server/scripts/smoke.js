@@ -40,14 +40,24 @@ async function call(method, path, { token, body } = {}) {
 (async () => {
   const ts = Date.now().toString().slice(-8);
   const userName = '散修' + ts;
+  const adminEmail = 'admin@xiuxian.local';
+  const userEmail = `u${ts}@test.dev`;
+  const altEmail = `alt${ts}@test.dev`;
   // 普通用户用法修（验证灵气+20%链路），管理员用剑修
   const userProfession = 'mage';
+
+  // 开发模式取验证码（send-code 409=邮箱已注册，返回 null）
+  async function getDevCode(email) {
+    const r = await call('POST', '/auth/send-code', { body: { email } });
+    if (r.success && r.data && r.data.devCode) return r.data.devCode;
+    return null;
+  }
 
   // 1. 健康检查
   const health = await call('GET', '/health');
   ok(health.success === true, 'GET /health');
 
-  // 2. 注册协议校验
+  // 2. 注册协议校验（校验顺序保证 bad-body 断言先于邮箱/验证码）
   const noProf = await call('POST', '/auth/register', {
     body: { username: '无职' + ts, password: 'user123' }
   });
@@ -58,34 +68,51 @@ async function call(method, path, { token, body } = {}) {
   });
   ok(badProf.status === 400, '非法职业注册返回 400');
 
-  // 3. 注册管理员（ADMIN_USERNAME 匹配；幂等：已注册过则直接登录复用）
+  const badEmail = await call('POST', '/auth/send-code', { body: { email: 'not-an-email' } });
+  ok(badEmail.status === 400, '非法邮箱发码返回 400');
+
+  // 3. 注册管理员（验证码链路；幂等：已注册过则登录复用）
+  await getDevCode(adminEmail);   // 重复跑时邮箱已注册→409 忽略
   let regA = await call('POST', '/auth/register', {
-    body: { username: ADMIN_USERNAME, password: 'admin123', profession: 'sword' }
+    body: { username: ADMIN_USERNAME, password: 'admin123', profession: 'sword', email: adminEmail, code: '000000' }
   });
   let reusedAdmin = false;
   if (!regA.success && regA.status === 409) {
     regA = await call('POST', '/auth/login', { body: { account: ADMIN_USERNAME, password: 'admin123' } });
     reusedAdmin = true;
   }
-  ok(regA.success === true && regA.data.token, reusedAdmin ? '管理员登录复用（幂等）' : '注册管理员');
+  ok(regA.success === true && regA.data.token, reusedAdmin ? '管理员登录复用（幂等）' : '注册管理员（验证码链路）');
   ok(regA.data && regA.data.user && regA.data.user.role === 'admin', 'ADMIN_USERNAME 注册自动成为 admin');
   const adminToken = regA.data && regA.data.token;
 
-  // 4. 注册普通用户（法修）
-  const regU = await call('POST', '/auth/register', {
-    body: { username: userName, password: 'user123', profession: userProfession }
+  // 4. 注册普通用户（法修）：先错码 400 → 正码 201
+  const userCode = await getDevCode(userEmail);
+  ok(!!userCode, '发送验证码（开发模式回显）');
+  const wrongCode = userCode === '000000' ? '111111' : '000000';
+  const regBad = await call('POST', '/auth/register', {
+    body: { username: userName, password: 'user123', profession: userProfession, email: userEmail, code: wrongCode }
   });
-  ok(regU.success === true, '注册普通用户（法修）');
+  ok(regBad.status === 400 && /验证码/.test(regBad.message), '错误验证码返回 400', regBad.message);
+
+  const regU = await call('POST', '/auth/register', {
+    body: { username: userName, password: 'user123', profession: userProfession, email: userEmail, code: userCode }
+  });
+  ok(regU.success === true, '注册普通用户（法修·验证码通过）');
   ok(regU.data && regU.data.user && regU.data.user.spiritStones === 100, '注册赠送 100 灵石');
   ok(regU.data.user.realm === 1 && regU.data.user.realmName === '练气', '初始境界 练气（新8境界体系）');
   const userToken = regU.data && regU.data.token;
   const userId = regU.data.user.id || regU.data.user._id;
 
   // 5. 重复注册 / 登录
-  const dup = await call('POST', '/auth/register', {
-    body: { username: userName, password: 'user123', profession: 'body' }
+  const dupEmail = await call('POST', '/auth/register', {
+    body: { username: '他号' + ts, password: 'user123', profession: 'body', email: userEmail, code: '123456' }
   });
-  ok(dup.status === 409, '重复用户名返回 409');
+  ok(dupEmail.status === 409 && /邮箱/.test(dupEmail.message), '重复邮箱返回 409', dupEmail.message);
+  const altCode = await getDevCode(altEmail);
+  const dup = await call('POST', '/auth/register', {
+    body: { username: userName, password: 'user123', profession: 'body', email: altEmail, code: altCode }
+  });
+  ok(dup.status === 409 && /用户名/.test(dup.message), '重复用户名返回 409', dup.message);
   const login1 = await call('POST', '/auth/login', { body: { account: userName, password: 'user123' } });
   ok(login1.success === true && login1.data.token, '用户名登录');
   const badLogin = await call('POST', '/auth/login', { body: { account: userName, password: 'wrong' } });
@@ -331,10 +358,12 @@ async function call(method, path, { token, body } = {}) {
 
   // 29. 抽卡系统（妖修用户：100 注册灵石正好抽一次）
   const monsterName = '天命妖子' + ts;
+  const monsterEmail = `m${ts}@test.dev`;
+  const monCode = await getDevCode(monsterEmail);
   const regM = await call('POST', '/auth/register', {
-    body: { username: monsterName, password: 'mon123', profession: 'monster' }
+    body: { username: monsterName, password: 'mon123', profession: 'monster', email: monsterEmail, code: monCode }
   });
-  ok(regM.success === true, '注册妖修（抽卡测试）');
+  ok(regM.success === true, '注册妖修（抽卡测试·验证码链路）');
   const monToken = regM.data.token;
 
   const drawPoor = await call('POST', '/techniques/draw', { token: adminToken });
