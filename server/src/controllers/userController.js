@@ -6,6 +6,8 @@ const { toPostSummary } = require('../utils/serialize');
 const { toProfessionInfo, getDerivedStats } = require('../utils/profession');
 const { getRealmByLevel, getNextRealm } = require('../utils/realm');
 const { settleIdle, idlePerMinute, breakthroughInfo } = require('../utils/cultivation');
+const { calcPanel } = require('../utils/combat');
+const { levelUpCost, calcLevelStats, statsDiff } = require('../utils/techniqueStats');
 const {
   REWARDS,
   grantQi,
@@ -89,6 +91,45 @@ async function getPublicProfile(req, res) {
         spiritStones: isSelf ? obj.spiritStones : undefined
       },
       isSelf
+    }
+  });
+}
+
+// GET /api/users/me/stats —— 面板总属性（境界基础×职业率 + Σ功法层加成 + 装备预留）
+async function getMyStats(req, res) {
+  const user = await User.findById(req.userId).populate('practicingTechniques.technique');
+  if (!user) return res.status(404).json({ success: false, message: '用户不存在' });
+
+  const techEntries = (user.practicingTechniques || []).filter((p) => p.technique);
+  const panel = calcPanel(user, techEntries.map((p) => p.currentStats || {}));
+
+  res.json({
+    success: true,
+    data: {
+      ...panel,
+      techniques: techEntries.map((p) => {
+        const t = p.technique;
+        const level = p.currentLevel || 1;
+        const cur = p.currentStats || calcLevelStats(t.baseStats, t.growthRate, level);
+        const hasNext = level < t.maxLevel;
+        return {
+          id: t._id,
+          name: t.name,
+          grade: t.grade,
+          level,
+          maxLevel: t.maxLevel,
+          stats: cur,
+          nextPreview: hasNext
+            ? {
+                level: level + 1,
+                cost: levelUpCost(t.baseStats, level + 1),
+                gained: statsDiff(cur, calcLevelStats(t.baseStats, t.growthRate, level + 1))
+              }
+            : null
+        };
+      }),
+      qi: user.qi,
+      spiritStones: user.spiritStones
     }
   });
 }
@@ -187,6 +228,7 @@ async function myFavorites(req, res) {
 
 module.exports = {
   getMyProfile,
+  getMyStats,
   getPublicProfile,
   updateMe,
   changePassword,
