@@ -1,44 +1,14 @@
 /* ============================================================
-   灵墟论道 · 全局组件：视频背景 + 多平台音乐播放器
+   灵墟论道 · 全局组件：多平台音乐播放器
    依赖：ui.js（el）；在所有页面于 ui.js/api.js 之后引入，底部自执行
    音乐数据源：GDStudio 聚合 API（netease / qq / kugou / kuwo）
+   （第13轮：全站背景已改为静态水墨图 bg.webp，视频背景代码移除）
    ============================================================ */
 (function () {
   'use strict';
 
   var GD = 'https://music-api.gdstudio.xyz/api.php';
   var LS_KEY = 'dxplayer_state_v1';
-
-  /* ------------------------------------------------------------
-     模块一：全屏视频背景（纯视频，无音轨；失败降级静态山景）
-     ------------------------------------------------------------ */
-  function initVideoBg() {
-    var scene = document.querySelector('.ink-scene');
-    if (!scene || scene.querySelector('.ink-video')) return;
-    var v = document.createElement('video');
-    v.className = 'ink-video';
-    v.autoplay = true;
-    v.loop = true;
-    v.muted = true;          // 纯视频：静音，不干扰播放器
-    v.playsInline = true;
-    v.preload = 'metadata';
-    v.setAttribute('aria-hidden', 'true');
-    v.src = 'assets/video/forum_bg.mp4';
-    var failTimer = setTimeout(function () { fallback(); }, 6000); // 加载超时降级
-    function fallback() {
-      clearTimeout(failTimer);
-      if (v.parentNode) v.remove();          // 移除后由 .no-video 显示降级图 ink-fallback
-      scene.classList.add('no-video');
-    }
-    v.addEventListener('loadeddata', function () { clearTimeout(failTimer); });
-    v.addEventListener('error', fallback);
-    v.addEventListener('stalled', function () { /* 网络波动等待，不降级 */ });
-    scene.insertBefore(v, scene.firstChild); // 置于场景最底层
-    // 部分浏览器要求用户手势后才 autoplay，补一次播放尝试
-    var tryPlay = function () { v.play().catch(function () {}); };
-    document.addEventListener('click', tryPlay, { once: true });
-    tryPlay();
-  }
 
   /* ------------------------------------------------------------
      模块二：多平台音乐播放器
@@ -399,7 +369,6 @@
     document.addEventListener('visibilitychange', function () { if (document.hidden) save(); });
   }
 
-  initVideoBg();
   // DOM 就绪后建播放器（本脚本置于 body 末尾，直接执行即可）
   init();
 })();
