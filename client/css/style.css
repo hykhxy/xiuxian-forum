@@ -1056,34 +1056,21 @@ body { padding-bottom: 64px; }
   backdrop-filter: blur(3px);
   animation: lrcIn .25s ease;
 }
-/* 第19轮：面板放大 800×600（4:3），屏幕正中（fixed + translate 居中） */
+/* 第20轮：面板重构 900×550，深色磨砂玻璃 + 左角色45% / 右属性55% */
 .zw-card {
   position: fixed; top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  overflow: hidden;
-  width: 800px; height: 600px;
-  aspect-ratio: 4 / 3;
+  overflow: visible;                                    /* 允许角色头部微出框（破框立体感） */
+  width: 900px; height: 550px;
   max-width: 94vw; max-height: 90vh;
-  background: rgba(18, 9, 9, 0.72);                    /* 兜底底色 */
-  border: 1px solid rgba(216, 176, 74, 0.35);
+  background: rgba(15, 23, 42, 0.85);                   /* 深色磨砂玻璃 */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
-  box-shadow: 0 0 40px rgba(216, 176, 74, 0.14), 0 24px 60px rgba(0, 0, 0, 0.6);
-  padding: 26px 34px 30px;
+  box-shadow: 0 0 60px rgba(100, 150, 255, 0.12), 0 24px 60px rgba(0, 0, 0, 0.6);
+  padding: 22px 32px 24px;
 }
-/* 性别背景图层（最底）与遮罩层（图上·内容下） */
-.zw-bg {
-  position: absolute; inset: 0; z-index: 0;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-.zw-shade {
-  position: absolute; inset: 0; z-index: 1;
-  background: rgba(0, 0, 0, 0.6);                      /* 半透明黑遮罩 */
-  backdrop-filter: blur(5px);                          /* + 毛玻璃 */
-  -webkit-backdrop-filter: blur(5px);
-}
-.zw-card > *:not(.zw-bg):not(.zw-shade) { position: relative; z-index: 2; }
 .zw-gender-toggle {
   width: 34px; height: 34px; border-radius: 50%;
   background: rgba(0, 0, 0, 0.4);
@@ -1093,62 +1080,69 @@ body { padding-bottom: 64px; }
   transition: box-shadow .2s, transform .2s;
 }
 .zw-gender-toggle:hover { box-shadow: 0 0 14px rgba(216, 176, 74, 0.55); transform: scale(1.08); }
-.zw-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.zw-head { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
 .zw-title { font-family: var(--font-brush); font-size: 26px; letter-spacing: 12px; color: #e8cf9a; text-shadow: 0 0 16px rgba(216, 176, 74, 0.5); }
+.zw-head .zw-gender-toggle { margin-left: auto; }
 .zw-close { cursor: pointer; color: rgba(243, 233, 220, 0.55); font-size: 16px; padding: 4px 8px; }
 .zw-close:hover { color: #fff; }
 
-.zw-body { display: flex; gap: 24px; align-items: stretch; }
+.zw-body { display: flex; gap: 20px; align-items: stretch; height: calc(100% - 58px); }
 
-/* 左：打坐剪影 */
-.zw-figure-wrap {
-  position: relative; width: 170px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; flex-direction: column;
+/* 左：2D 角色立绘区（45%） */
+.zw-char-area {
+  position: relative; flex: 0 0 45%;
+  display: flex; align-items: flex-end; justify-content: center;
+  overflow: visible;                                    /* 允许 margin-top:-20px 破框 */
+  min-width: 0;
 }
-.zw-halo {
+.zw-char-img {
+  height: 100%; width: auto; max-width: 100%;
+  object-fit: contain; object-position: bottom center;  /* 脚踩面板底部，不变形 */
+  margin-top: -20px;                                    /* 头/剑尖微微超出顶边（破框） */
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.55));
   position: relative; z-index: 1;
-  width: 130px; height: 130px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(216, 176, 74, 0.22), rgba(139, 0, 0, 0.10) 62%, transparent 75%);
-  border: 1px solid rgba(216, 176, 74, 0.4);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 26px rgba(216, 176, 74, 0.28), inset 0 0 30px rgba(216, 176, 74, 0.12);
-  animation: zwBreath 4.5s ease-in-out infinite;
 }
-@keyframes zwBreath {
-  0%, 100% { box-shadow: 0 0 22px rgba(216, 176, 74, 0.22), inset 0 0 26px rgba(216, 176, 74, 0.10); }
-  50%      { box-shadow: 0 0 38px rgba(216, 176, 74, 0.42), inset 0 0 38px rgba(216, 176, 74, 0.2); }
+/* 地面反光椭圆光晕：颜色随性别 */
+.zw-char-glow {
+  position: absolute; bottom: 6px; left: 50%;
+  width: 86%; height: 56px; border-radius: 50%;
+  transform: translateX(-50%);
+  filter: blur(6px);
+  pointer-events: none;
 }
-.zw-figure { font-size: 64px; line-height: 1; filter: drop-shadow(0 0 12px rgba(216, 176, 74, 0.55)); }
-.zw-ripple {
-  position: absolute; top: 50%; left: 50%;
-  width: 130px; height: 40px; border-radius: 50%;
-  border: 1px solid rgba(216, 176, 74, 0.4);
-  transform: translate(-50%, -20px) scaleX(1);
-  animation: zwRipple 3.2s ease-out infinite;
+.zw-char-glow.glow-male {
+  background: radial-gradient(ellipse at center, rgba(147, 197, 253, 0.45), rgba(147, 197, 253, 0.12) 60%, transparent 78%);
 }
-.zw-ripple-2 { animation-delay: 1.6s; }
-@keyframes zwRipple {
-  0%   { transform: translate(-50%, -20px) scaleX(0.4); opacity: 0.9; }
-  100% { transform: translate(-50%, -20px) scaleX(1.7); opacity: 0; }
+.zw-char-glow.glow-female {
+  background: radial-gradient(ellipse at center, rgba(244, 163, 215, 0.45), rgba(244, 163, 215, 0.12) 60%, transparent 78%);
 }
-.zw-figure-caption { margin-top: 10px; font-family: var(--font-brush); font-size: 13px; letter-spacing: 4px; color: rgba(243, 233, 220, 0.55); }
 
-/* 右：两列属性（第19轮：大面板字体放大） */
-.zw-stats { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px 26px; align-content: start; min-width: 0; }
-.zw-loading, .zw-login-tip { grid-column: 1 / -1; text-align: center; color: rgba(243, 233, 220, 0.55); padding: 30px 0; font-family: var(--font-brush); letter-spacing: 3px; font-size: 16px; }
+/* 右：属性区（55%，两列；28px 标题 + 4px 金色竖线 + 16px 浅灰值 + 行高1.8） */
+.zw-stats { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 22px; align-content: start; min-width: 0; line-height: 1.8; }
+.zw-loading, .zw-login-tip { grid-column: 1 / -1; text-align: center; color: rgba(203, 213, 225, 0.7); padding: 30px 0; font-family: var(--font-brush); letter-spacing: 3px; font-size: 16px; }
 .zw-login-tip a { color: #e8cf9a; }
-.zw-name { grid-column: 1 / -1; font-family: var(--font-brush); font-size: 30px; letter-spacing: 6px; color: #f3e9dc; text-shadow: 0 2px 12px rgba(0,0,0,0.8); border-bottom: 1px solid rgba(216, 176, 74, 0.35); padding-bottom: 8px; margin-bottom: 6px; }
-.zw-sub { font-family: var(--font-brush); font-size: 14px; letter-spacing: 3px; color: rgba(216, 176, 74, 0.85); margin-top: 6px; }
-.zw-kv { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px dashed rgba(243, 233, 220, 0.14); }
-.zw-kv-label { font-family: var(--font-brush); font-size: 15px; letter-spacing: 2px; color: rgba(243, 233, 220, 0.6); flex-shrink: 0; }
-.zw-kv-value { font-size: 18px; color: #f3e9dc; font-weight: 600; text-align: right; text-shadow: 0 1px 6px rgba(0,0,0,0.7); }
-.zw-tech-row { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; padding-top: 12px; border-top: 1px dashed rgba(216, 176, 74, 0.3); }
+.zw-name {
+  grid-column: 1 / -1;
+  font-family: var(--font-brush); font-size: 28px; font-weight: 700;
+  letter-spacing: 6px; color: #f8fafc;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+  border-left: 4px solid #d8b04a;                       /* 4px 金色竖线装饰 */
+  padding-left: 14px;
+  margin-bottom: 8px;
+}
+.zw-sub { font-family: var(--font-brush); font-size: 14px; letter-spacing: 3px; color: rgba(216, 176, 74, 0.9); margin-top: 4px; }
+.zw-kv { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px dashed rgba(203, 213, 225, 0.14); }
+.zw-kv-label { font-family: var(--font-brush); font-size: 14px; letter-spacing: 2px; color: rgba(203, 213, 225, 0.65); flex-shrink: 0; }
+.zw-kv-value { font-size: 16px; color: #cbd5e1; font-weight: 600; text-align: right; }
+.zw-tech-row { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; padding-top: 10px; border-top: 1px dashed rgba(216, 176, 74, 0.3); }
 
 /* 导航「真我」按钮微光 */
 .nav-btn-zhenwo { color: #e8cf9a !important; text-shadow: 0 0 8px rgba(216, 176, 74, 0.45); }
 
-@media (max-width: 680px) {
-  .zw-body { flex-direction: column; align-items: center; }
-  .zw-figure-wrap { width: 100%; }
+@media (max-width: 720px) {
+  .zw-card { width: 94vw; height: auto; aspect-ratio: auto; }
+  .zw-body { flex-direction: column; height: auto; }
+  .zw-char-area { flex: none; height: 260px; }
+  .zw-char-img { margin-top: 0; }
   .zw-stats { width: 100%; }
 }
