@@ -1,16 +1,14 @@
-// 个人主页：资料 + 境界进度 + 签到日历 + 帖子/收藏/功法 Tab + 编辑资料/密码
+// 个人主页：资料 + 修行（挂机/突破）+ 签到日历 + 帖子/收藏/功法 Tab + 编辑资料/密码
 (function () {
   renderNav('');
   const userId = qs('id') || Auth.userId();
   const headEl = document.getElementById('profile-head');
   const checkinCard = document.getElementById('checkin-card');
+  const cultCard = document.getElementById('cultivation-card');
   const tabsEl = document.getElementById('tabs');
   const contentEl = document.getElementById('tab-content');
 
   if (!userId) { emptyState(headEl, '未指定用户'); return; }
-
-  // 境界进度数据（与后端 utils/realm.js 一致）
-  const REALM_EXP = [0, 10, 25, 50, 90, 150, 240, 360, 520, 800, 1300, 2200, 3800, 6500, 11000, 18000, 30000, 50000];
 
   let profileUser = null;
   let isSelf = false;
@@ -28,7 +26,7 @@
     const info = el('div', 'profile-info');
     const nameRow = el('div', 'profile-name');
     nameRow.appendChild(el('span', null, profileUser.username));
-    nameRow.appendChild(realmBadge(profileUser.realmLevel, profileUser.realmName));
+    nameRow.appendChild(realmBadge(profileUser.realm, profileUser.realmName));
     const profBadge = profileUser.profession ? professionBadge(profileUser.profession.key || profileUser.profession) : null;
     if (profBadge) nameRow.appendChild(profBadge);
     if (profileUser.role === 'admin') nameRow.appendChild(el('span', 'badge realm-4', '执事'));
@@ -41,36 +39,11 @@
     const bio = el('div', 'profile-bio', profileUser.bio || '（此人道心深邃，未留一言）');
     info.appendChild(bio);
 
-    // 境界进度
-    const level = profileUser.realmLevel || 1;
-    const curExp = profileUser.exp || 0;
-    const pw = el('div', 'progress-wrap');
-    if (level >= 18) {
-      const pt = el('div', 'progress-text');
-      pt.appendChild(el('span', null, '修为 ' + curExp));
-      pt.appendChild(el('span', null, '已臻化境'));
-      const bar = el('div', 'progress-bar');
-      const inner = el('div', 'progress-inner');
-      inner.style.width = '100%';
-      bar.appendChild(inner);
-      pw.appendChild(bar);
-      pw.appendChild(pt);
-    } else {
-      const base = REALM_EXP[level - 1];
-      const next = REALM_EXP[level];
-      const pct = Math.min(Math.round(((curExp - base) / (next - base)) * 100), 100);
-      const bar = el('div', 'progress-bar');
-      const inner = el('div', 'progress-inner');
-      inner.style.width = pct + '%';
-      bar.appendChild(inner);
-      pw.appendChild(bar);
-      const pt = el('div', 'progress-text');
-      pt.appendChild(el('span', null, '修为 ' + curExp + ' / ' + next));
-      pt.appendChild(el('span', null, REALM_NAMES[level] + ' → ' + REALM_NAMES[level] + '（' + pct + '%）'));
-      pt.childNodes[1].textContent = '距 ' + REALM_NAMES[level] + ' 尚差 ' + (next - curExp) + ' 修为';
-      pw.appendChild(pt);
-    }
-    info.appendChild(pw);
+    // 境界行（灵气进度细节在「修行」卡片中展示）
+    const realmLine = el('div', 'profile-bio', profileUser.nextRealmName
+      ? '当前境界 ' + profileUser.realmName + ' → 下一境 ' + profileUser.nextRealmName
+      : '当前境界 ' + profileUser.realmName + '（已至顶点）');
+    info.appendChild(realmLine);
 
     // 统计
     const stats = el('div', 'stats-row');
@@ -82,7 +55,7 @@
     }
     stats.appendChild(statBox(profileUser.postCount, '帖子'));
     stats.appendChild(statBox(profileUser.commentCount, '评论'));
-    stats.appendChild(statBox(curExp, '修为'));
+    stats.appendChild(statBox(profileUser.qi, '灵气'));
     if (isSelf) stats.appendChild(statBox('◇ ' + profileUser.spiritStones, '灵石'));
     info.appendChild(stats);
 
@@ -102,11 +75,102 @@
     headEl.appendChild(head);
 
     if (isSelf) {
+      cultCard.style.display = '';
+      loadCultivation();
       checkinCard.style.display = '';
       loadCheckin();
     }
     renderTabs();
     loadTab();
+  }
+
+  // ---------- 修行：挂机 + 突破 ----------
+  let cultTimer = null;
+
+  async function loadCultivation() {
+    const r = await api.get('/cultivation/status');
+    if (!r.ok) return;
+    renderCultivation(r.data);
+    if (r.data.justSettled > 0 && r.data.isIdling) {
+      // 访问自动结算不打断挂机，静默入账即可
+    }
+    clearTimeout(cultTimer);
+    if (r.data.isIdling) cultTimer = setTimeout(loadCultivation, 5000); // 挂机中每 5s 刷新
+  }
+
+  function renderCultivation(d) {
+    cultCard.innerHTML = '';
+
+    const head = el('div', 'checkin-box');
+    const left = el('div');
+    left.appendChild(el('div', 'page-title', '闭关修行', null));
+    left.firstChild.style.fontSize = '17px';
+    const tip = el('div', 'page-sub');
+    tip.textContent = d.isIdling
+      ? '吐纳中… ' + d.idleRatePerMinute + ' 灵气/分钟（' + d.realm.name + '）'
+      : '未在挂机 · ' + d.realm.name + ' 挂机速率 ' + d.idleRatePerMinute + ' 灵气/分钟';
+    left.appendChild(tip);
+    head.appendChild(left);
+
+    const idleBtn = el('button', 'btn ' + (d.isIdling ? 'btn-danger' : 'btn-jade'), d.isIdling ? '出关（结算灵气）' : '开始挂机');
+    idleBtn.onclick = async () => {
+      idleBtn.disabled = true;
+      const r = d.isIdling
+        ? await api.post('/cultivation/idle/stop')
+        : await api.post('/cultivation/idle/start');
+      if (!r.ok) { idleBtn.disabled = false; return toast(r.message, 'error'); }
+      if (d.isIdling) {
+        toast('出关：' + r.data.durationMinutes + ' 分钟收获灵气 +' + r.data.gained, 'exp');
+      } else {
+        toast('开始吐纳，灵气将随时间累积', 'success');
+      }
+      loadCultivation();
+      load(); // 刷新头部灵气
+    };
+    head.appendChild(idleBtn);
+    cultCard.appendChild(head);
+
+    // 灵气进度 + 突破
+    const pw = el('div', 'progress-wrap');
+    if (d.breakthrough) {
+      const pct = Math.min(Math.round((d.qi / d.breakthrough.cost) * 100), 100);
+      const bar = el('div', 'progress-bar');
+      const inner = el('div', 'progress-inner');
+      inner.style.width = pct + '%';
+      bar.appendChild(inner);
+      pw.appendChild(bar);
+      const pt = el('div', 'progress-text');
+      pt.appendChild(el('span', null, '灵气 ' + d.qi + ' / ' + d.breakthrough.cost));
+      pt.appendChild(el('span', null, d.realm.name + ' → ' + d.breakthrough.toRealm + '（' + pct + '%）'));
+      pw.appendChild(pt);
+
+      const row = el('div', null);
+      row.style.cssText = 'display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap';
+      const btBtn = el('button', 'btn btn-primary', '一键突破 ' + d.realm.name + ' → ' + d.breakthrough.toRealm);
+      if (d.qi < d.breakthrough.cost) btBtn.disabled = true;
+      btBtn.onclick = async () => {
+        if (!confirm('消耗 ' + d.breakthrough.cost + ' 灵气尝试突破？\n成功率 ' + Math.round(d.breakthrough.successRate * 100) + '%，失败损失 ' + d.breakthrough.failLoss + ' 灵气')) return;
+        btBtn.disabled = true;
+        const r = await api.post('/cultivation/breakthrough');
+        btBtn.disabled = false;
+        if (!r.ok) return toast(r.message, 'error');
+        if (r.data.success) toast(r.data.message, 'exp');
+        else toast(r.data.message, 'error');
+        loadCultivation();
+        load();
+      };
+      row.appendChild(btBtn);
+      const info = el('span', 'form-hint',
+        '成功率 ' + Math.round(d.breakthrough.successRate * 100) + '% · 失败损 ' + d.breakthrough.failLoss);
+      row.appendChild(info);
+      pw.appendChild(row);
+    } else {
+      const pt = el('div', 'progress-text');
+      pt.appendChild(el('span', null, '灵气 ' + d.qi));
+      pt.appendChild(el('span', null, '已至渡劫，修为圆满'));
+      pw.appendChild(pt);
+    }
+    cultCard.appendChild(pw);
   }
 
   // ---------- 签到 ----------
@@ -137,9 +201,9 @@
     if (!r.ok) { btn.disabled = false; return toast(r.message, 'error'); }
     Auth.updateUser(r.data.user);
     const bonus = r.data.hitStreak ? '（连签 ' + r.data.consecutiveDays + ' 天，额外奖励！）' : '';
-    toast('签到成功：修为 +' + r.data.expGained + '、灵石 +' + r.data.stonesGained + bonus, 'exp');
+    toast('签到成功：灵气 +' + r.data.qiGained + '、灵石 +' + r.data.stonesGained + bonus, 'exp');
     loadCheckin();
-    load(); // 刷新头部修为
+    load(); // 刷新头部灵气
   }
 
   function renderCalendar() {
@@ -219,7 +283,7 @@
         link.style.cssText = 'font-weight:600;flex:1';
         row.appendChild(gradeBadge(t.data.technique.grade));
         row.appendChild(link);
-        row.appendChild(el('span', 'form-hint', '修为 +' + Math.round((pt.expBonusRate - 1) * 100) + '% · 修炼于 ' + fmtDateTime(pt.startedAt)));
+        row.appendChild(el('span', 'form-hint', '灵气 +' + Math.round((pt.expBonusRate - 1) * 100) + '% · 修炼于 ' + fmtDateTime(pt.startedAt)));
         wrap.appendChild(row);
       }
       contentEl.innerHTML = '';
