@@ -45,36 +45,18 @@ function qs(name) {
   return new URLSearchParams(location.search).get(name);
 }
 
-// ---------- 水墨动态背景（元素一次性注入，动画全部由 CSS @keyframes 驱动） ----------
-// 层序（.ink-scene, fixed, z-index:-2 内部）：
-//   video(player.js 插入,最底) → fallback(降级图,默认隐藏) → dim(黑遮罩) → cloud×3 / water / mist / fireflies
-// 视频之上另有 body::before 宣纸白渐变(z-index:-1) 组成双层遮罩保证文字可读
+// ---------- 全站背景层（第13轮：红黑水墨静态图） ----------
+// .ink-scene 由 CSS 承载 assets/img/bg.webp（cover/fixed + 提亮滤镜，z-index:-2），
+// 之上是 body::before 深红遮罩 rgba(10,5,5,0.45)（z-index:-1）；此处仅注入空壳元素。
 function initInkScene() {
   if (document.querySelector('.ink-scene')) return;
   const scene = el('div', 'ink-scene');
   scene.setAttribute('aria-hidden', 'true');
-  scene.appendChild(el('div', 'ink-fallback'));        // 视频失败降级图（.no-video 时显示）
-  scene.appendChild(el('div', 'ink-dim'));             // 黑色轻遮罩压视频
-  scene.appendChild(el('div', 'ink-cloud ink-cloud-1'));
-  scene.appendChild(el('div', 'ink-cloud ink-cloud-2'));
-  scene.appendChild(el('div', 'ink-cloud ink-cloud-3'));
-  scene.appendChild(el('div', 'ink-water'));
-  scene.appendChild(el('div', 'ink-mist'));
-  const flies = el('div', 'ink-fireflies');
-  for (let i = 0; i < 8; i++) flies.appendChild(el('i'));
-  scene.appendChild(flies);
   document.body.appendChild(scene);
 }
 
-// 给容器内所有 .card 注入两粒面板萤火（每轮渲染后调用）
-function sprinkleFireflies(container) {
-  (container || document).querySelectorAll('.card').forEach((card) => {
-    if (!card.querySelector('.ff')) {
-      card.appendChild(el('i', 'ff'));
-      card.appendChild(el('i', 'ff'));
-    }
-  });
-}
+// 保留 API 兼容旧调用（dengxian/tingqu 等页面仍在调用）；萤火层已随旧背景移除
+function sprinkleFireflies() { /* no-op */ }
 
 // ---------- 导航栏 ----------
 function renderNav(active) {
