@@ -9,30 +9,34 @@
 <body>
   <header id="site-nav"></header>
 
-  <main class="container page dengxian-page">
-    <!-- 书法标题：背景之上、遮罩之下 -->
-    <section class="dengxian-hero">
+  <main class="container page">
+    <!-- 书法标题（居中，叠于水墨/视频背景之上，body::before 半透明遮罩保证可读） -->
+    <section class="dx-hero">
       <div class="dx-title">登仙 · 闭关修行</div>
-      <div class="dx-slogan">朝饮灵露 · 暮吸紫烟 · 闭关千日 · 一朝登仙</div>
+      <div class="dx-sub">云在青天水在瓶 · 一念放下便登仙</div>
     </section>
 
-    <!-- 修行面板：半透明白底 + 墨线边框（rgba(255,255,255,0.6) 遮罩语义） -->
-    <section class="card dx-panel" id="cultivation-card">
-      <i class="ff"></i><i class="ff"></i>
-    </section>
-
-    <!-- 仙途长阶：八境一览 -->
-    <section class="card dx-panel dx-realm-path">
-      <i class="ff"></i><i class="ff"></i>
-      <div class="side-title">仙途 · 八境</div>
-      <div class="dx-realm-steps" id="realm-steps"></div>
-    </section>
+    <!-- 闭关修行（自个人中心完整迁移：挂机 / 进度 / 一键突破） -->
+    <div class="dx-grid">
+      <div class="card dx-card" id="cultivation-card">
+        <i class="ff"></i><i class="ff"></i>
+      </div>
+      <div class="card dx-card dx-tips">
+        <i class="ff"></i><i class="ff"></i>
+        <div class="side-title">修行要诀</div>
+        <div class="dx-tip-item">❖ 挂机产出 = 境界速率 × 职业倍率 × 功法倍率；离开页面亦持续累积，访问自动结算。</div>
+        <div class="dx-tip-item">❖ 突破有败：失败损失半数灵气；魔修全损；血修成功率 +10%。</div>
+        <div class="dx-tip-item">❖ 境界愈高，挂机愈速：练气百灵每分钟，渡劫一万二千八百。</div>
+        <div class="dx-tip-item">❖ 灵石可在藏经阁天机阁抽取功法；签到与论道皆有产出。</div>
+      </div>
+    </div>
   </main>
 
   <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/player.js"></script>
   <script src="js/pages/dengxian.js"></script>
 </body>
 </html>
